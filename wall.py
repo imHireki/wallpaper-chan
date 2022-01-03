@@ -67,6 +67,11 @@ class WallpaperHandler:
         # Sort the color_incidences by its incidences in descending order
         return sorted(color_incidences, key=lambda x: x[1], reverse=True)
 
+    @staticmethod
+    def get_sorted_colors(color_incidences:list) -> list:
+        """ Get the sorted colors """
+        return [_[0] for _ in color_incidences]
+
 
 if __name__ == '__main__':
     wallpaper_fp = ''
@@ -78,7 +83,6 @@ if __name__ == '__main__':
     hex_color_list = w.get_colors_hex(color_cluster)
     color_incidences = w.get_sorted_colors_incidences(hex_color_list,
                                                       color_cluster)
+    sorted_colors = w.get_sorted_colors(color_incidences)
 
     w.close_image
-
-    print(color_incidences)
