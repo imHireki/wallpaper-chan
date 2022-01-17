@@ -1,88 +1,86 @@
-#!env/bin/python3
-
-from PIL import Image
+#!/usr/bin/env python3
 from numpy import asarray, product, histogram, argmax
 from binascii import hexlify
 from scipy import cluster
+import PIL.Image
 
 
-class WallpaperHandler:
-    def __init__(self, fp):
-        self.wallpaper_fp = fp
-        self.wallpaper_pil = None
-        self.image_asarray = None
+class ImageColor:
+    def __init__(self, **kwargs):
+        self.img = kwargs.get('img', None)
 
-    @staticmethod
-    def resize_img(img, multiplier=0.25) -> object:
-        """ Resize the Image to 10% of its size, return the resized image """
-        size = ((round(x * multiplier))
-                 for x in img.size)
-        return img.resize(size, resample=Image.HAMMING)
-
-    def open_image(self):
-        """ Open image, call resize_img and set `self.wallpaper_pil` """
-        img = Image.open(self.wallpaper_fp)
-        self.wallpaper_pil = self.resize_img(img)
-
-    def close_image(self):
-        """ Close image and set `self.wallpaper_pil` to None """
-        self.wallpaper_pil.close()
-        self.wallpaper_pil = None
-
-    def get_cluster_image_colors(self, clusters=10) -> object:
-        """ Get the color CLUSTER from the `self.wallpaper_pil` object """
-        ar = asarray(self.wallpaper_pil)
+    def get_color_cluster(self, clusters:int):
+        ar = asarray(self.img)
         shape = ar.shape
         ar = ar.reshape(product(shape[:2]),
                         shape[2]).astype(float)
 
         self.image_asarray = ar
-
         return cluster.vq.kmeans(ar, clusters)[0]
 
-    def get_colors_hex(self, colors) -> list:
-        """ Get HEX colors from a given list of colors from a CLUSTER """
+    def get_incidences(self, color_cluster):
+        vecs = cluster.vq.vq(self.image_asarray, color_cluster)[0]
+        return histogram(vecs, len(color_cluster))[0]
+
+    @staticmethod
+    def get_hex(color_cluster) -> list:
         return [
             '#' +
             str(hexlify(bytearray((int(_) for _ in color))
                         ).decode('ascii')
                 )
-            for color in colors
-            ]
-
-    def get_sorted_colors_incidences(self, colors:list, codes) -> list:
-        """ Get a sorted list of color and its incidences """
-
-        # Make a graph with  the hex colors and its incidents
-        vecs = cluster.vq.vq(self.image_asarray, codes)[0]
-        counts = histogram(vecs, len(codes))[0]
-
-        # Put it all back together as [ ('color', 'incidents'), ]
-        color_incidences = [ (x, y)
-                            for a, b in enumerate(colors)
-                            for x, y in [
-                                (colors[a], counts[a])
-                                ]
-                            ]
-        # Sort the color_incidences by its incidences in descending order
-        return sorted(color_incidences, key=lambda x: x[1], reverse=True)
+            for color in color_cluster
+        ]
 
     @staticmethod
-    def get_sorted_colors(color_incidences:list) -> list:
-        """ Get the sorted colors """
-        return [_[0] for _ in color_incidences]
+    def get_colors_incidences(colors, incidences):
+        # Put it all back together as [ ('color', 'incidents'), ]
+        return [ (x, y)
+                 for a, b in enumerate(colors)
+                 for x, y in [
+                     (colors[a], incidences[a])
+                     ]
+                 ]
+
+    @staticmethod
+    def get_sorted_colors(color_incidences):
+        # Sort the color_incidences by its incidences in descending order
+        sorted_color_incidences = sorted(color_incidences,
+                                         key=lambda x: x[1],
+                                         reverse=True)
+
+        return [_[0] for _ in sorted_color_incidences]
+
+    @staticmethod
+    def get_dominant_color(cluster, color_incidences):
+        index_max = argmax(color_incidences)
+        peak = cluster[index_max]
+        return peak
+
+
+class GetColors:
+    def __init__(self, image):
+        self.ic = ImageColor(img=image)
+
+    def get_palette(self, amount=5):
+        color_cluster = self.ic.get_color_cluster(amount)
+
+        hex_colors = self.ic.get_hex(color_cluster)
+        incidences = self.ic.get_incidences(color_cluster)
+
+        colors_incidences = self.ic.get_colors_incidences(hex_colors, incidences)
+        return self.ic.get_sorted_colors(colors_incidences)
+
+    def get_dominant_color(self, precision=5):
+        color_cluster = self.ic.get_color_cluster(precision)
+        incidences = self.ic.get_incidences(color_cluster)
+        dominant = self.ic.get_dominant_color(color_cluster, incidences)
+        return self.ic.get_hex([dominant])
 
 
 if __name__ == '__main__':
-    wallpaper_fp = ''
-    w = WallpaperHandler(wallpaper_fp)
+    with PIL.Image.open('vimgirl.jpg') as img:
+        color = GetColors(img)
 
-    w.open_image()
-
-    color_cluster = w.get_cluster_image_colors()
-    hex_color_list = w.get_colors_hex(color_cluster)
-    color_incidences = w.get_sorted_colors_incidences(hex_color_list,
-                                                      color_cluster)
-    sorted_colors = w.get_sorted_colors(color_incidences)
-
-    w.close_image
+        print(color.get_palette())
+        print(color.get_dominant_color())
