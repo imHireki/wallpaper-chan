@@ -1,8 +1,101 @@
 #!/usr/bin/env python3
+from django.core.files.images import File, ImageFile
+from io import BytesIO
+from abc import ABC, abstractmethod
+from time import time
+
 from numpy import asarray, product, histogram, argmax
 from binascii import hexlify
 from scipy import cluster
 import PIL.Image
+
+
+class Image(ABC):
+    # FIXME: add support to PNG and GIF
+    def __init__(self, **kwargs):
+        self.img: object = kwargs.get('img', None)
+
+        self.size: tuple = kwargs.get('size', (512, 512))
+        self.quality: int = kwargs.get('quality', 100)
+        self.resample: object = kwargs.get('resample', PIL.Image.LANCZOS)
+
+        self.name: str = kwargs.get('name', self.get_name())
+        self.img_format: str = kwargs.get('img_format', 'jpeg')
+
+    @staticmethod
+    def get_name():
+        return '{}.jpg'.format(round(time()))
+
+    @abstractmethod
+    def handle_rgba(self) -> None: pass
+
+    @abstractmethod
+    def resize(self) -> None: pass
+
+    @abstractmethod
+    def save(self) -> File: pass
+
+    def perform_actions(self) -> File:
+        """ Perform actions without modify other funcitions
+            - mainly used to get dominant color when resizing
+              the smaller image
+
+        TODO: add full support to RGBA images
+        """
+        if self.img.mode == 'RGBA':
+            self.handle_rgba()
+        self.resize()
+        return self.save() # File
+
+
+class Icon(Image):
+    def handle_rgba(self) -> None:
+        """ Add opaque white background to the alpha layer """
+        white_background = PIL.Image.new(
+            mode='RGBA',
+            size=self.img.size,
+            color=(255, 255, 255)
+            )
+
+        self.img = PIL.Image.alpha_composite(
+            im1=white_background,
+            im2=self.img
+            ).convert('RGB')
+
+    def resize(self) -> None:
+        """ Resize self.image with `self.size` & `self.resample` """
+        self.img = self.img.resize(
+            size=self.size,
+            resample=self.resample,
+            reducing_gap=2.0
+            )
+
+    def save(self) -> File:
+        """ Save `self.image` & return its File
+            FIXME: return & handle a better object than django's File
+        """
+        img_io = BytesIO()
+        img_file = File(img_io, name=self.name)
+
+        self.img.save(img_io,
+                      format=self.img_format,
+                      quality=self.quality,
+                      optimize=True)
+
+        return img_file
+
+
+class Wallpaper(Image): pass
+
+
+class ImageFactory:
+    """ Image Factory returns a specific Image class """
+
+    @staticmethod
+    def for_icon(**kwargs): return Icon(**kwargs)
+
+    @staticmethod
+    def for_wallpaper(): pass
 
 
 class ImageColor:
@@ -84,3 +177,7 @@ if __name__ == '__main__':
 
         print(color.get_palette())
         print(color.get_dominant_color())
+
+        icon = ImageFactory.for_icon(img=img,
+                                     size=(128, 128))
+        icon.perform_actions()
