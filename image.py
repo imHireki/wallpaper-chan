@@ -2,7 +2,7 @@
 from django.core.files.images import File, ImageFile
 from io import BytesIO
 from abc import ABC, abstractmethod
-from time import time
+from time import time, sleep
 
 from numpy import asarray, product, histogram, argmax
 from binascii import hexlify
@@ -11,19 +11,18 @@ import PIL.Image
 
 
 class Image(ABC):
-    # FIXME: add support to PNG and GIF
+    # FIXME: support to PNG and GIF
     def __init__(self, **kwargs):
         self.img: object = kwargs.get('img', None)
 
-        self.size: tuple = kwargs.get('size', (512, 512))
+        self.size: tuple = kwargs.get('size', self.img.size)
         self.quality: int = kwargs.get('quality', 100)
         self.resample: object = kwargs.get('resample', PIL.Image.LANCZOS)
 
         self.name: str = kwargs.get('name', self.get_name())
         self.img_format: str = kwargs.get('img_format', 'jpeg')
 
-    @staticmethod
-    def get_name():
+    def get_name(self):
         return '{}.jpg'.format(round(time()))
 
     @abstractmethod
@@ -32,20 +31,12 @@ class Image(ABC):
     @abstractmethod
     def resize(self) -> None: pass
 
-    @abstractmethod
-    def save(self) -> File: pass
-
-    def perform_actions(self) -> File:
-        """ Perform actions without modify other funcitions
-            - mainly used to get dominant color when resizing
-              the smaller image
-
-        TODO: add full support to RGBA images
-        """
-        if self.img.mode == 'RGBA':
-            self.handle_rgba()
-        self.resize()
-        return self.save() # File
+    def save(self, at) -> None:
+        """ Save image, on a BytesIO object or path """
+        self.img.save(at,
+                      format=self.img_format,
+                      quality=self.quality,
+                      optimize=True)
 
 
 class Icon(Image):
@@ -70,20 +61,6 @@ class Icon(Image):
             reducing_gap=2.0
             )
 
-    def save(self) -> File:
-        """ Save `self.image` & return its File
-            FIXME: return & handle a better object than django's File
-        """
-        img_io = BytesIO()
-        img_file = File(img_io, name=self.name)
-
-        self.img.save(img_io,
-                      format=self.img_format,
-                      quality=self.quality,
-                      optimize=True)
-
-        return img_file
-
 
 class Wallpaper(Image): pass
 
@@ -92,7 +69,8 @@ class ImageFactory:
     """ Image Factory returns a specific Image class """
 
     @staticmethod
-    def for_icon(**kwargs): return Icon(**kwargs)
+    def for_icon(**kwargs):
+        return Icon(**kwargs)
 
     @staticmethod
     def for_wallpaper(): pass
@@ -172,12 +150,23 @@ class GetColors:
 
 
 if __name__ == '__main__':
-    with PIL.Image.open('vimgirl.jpg') as img:
+    with PIL.Image.open('img.jpg') as img:
+        """
+        -- Color --
         color = GetColors(img)
+        palette = color.get_palette()
+        dc = color.get_dominant_color()
 
-        print(color.get_palette())
-        print(color.get_dominant_color())
+        -- Resize --
+        icon = ImageFactory.for_icon(img=img)
+        if img.mode == 'RGBA':
+            icon.handle_rgba()
+        icon.resize()
 
-        icon = ImageFactory.for_icon(img=img,
-                                     size=(128, 128))
-        icon.perform_actions()
+            -- Save To Stream --
+            b_img = BytesIO()
+            icon.save(b_img)
+
+            -- Save To File --
+            icon.save('path/to/file.jpg')
+        """
