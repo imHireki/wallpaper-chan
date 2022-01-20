@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-from django.core.files.images import File, ImageFile
-from io import BytesIO
 from abc import ABC, abstractmethod
-from time import time, sleep
+from io import BytesIO
+from time import time
 
 from numpy import asarray, product, histogram, argmax
 from binascii import hexlify
