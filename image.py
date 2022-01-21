@@ -78,28 +78,35 @@ class ImageFactory:
 class ImageColor:
     def __init__(self, **kwargs):
         self.img = kwargs.get('img', None)
+        self.img_asarray = self.get_image_asarray()
+        self.color_cluster = self.get_color_cluster(kwargs.get('clusters'))
 
-    def get_color_cluster(self, clusters:int):
+    def get_image_asarray(self):
         ar = asarray(self.img)
         shape = ar.shape
-        ar = ar.reshape(product(shape[:2]),
-                        shape[2]).astype(float)
+        return ar.reshape(product(shape[:2]),
+                          shape[2]).astype(float)
 
-        self.image_asarray = ar
-        return cluster.vq.kmeans(ar, clusters)[0]
+    def get_color_cluster(self, clusters:int):
+        return cluster.vq.kmeans(self.img_asarray, clusters)[0]
 
-    def get_incidences(self, color_cluster):
-        vecs = cluster.vq.vq(self.image_asarray, color_cluster)[0]
-        return histogram(vecs, len(color_cluster))[0]
+    def get_dominant_color(self, color_incidences):
+        index_max = argmax(color_incidences)
+        peak = self.color_cluster[index_max]
+        return peak
 
-    @staticmethod
-    def get_hex(color_cluster) -> list:
+    def get_incidences(self):
+        vecs = cluster.vq.vq(self.img_asarray, self.color_cluster)[0]
+        return histogram(vecs, len(self.color_cluster))[0]
+
+    def get_hex(self, cluster=None) -> list:
+        if not cluster: cluster = self.color_cluster
         return [
             '#' +
             str(hexlify(bytearray((int(_) for _ in color))
                         ).decode('ascii')
                 )
-            for color in color_cluster
+            for color in cluster
         ]
 
     @staticmethod
@@ -121,35 +128,25 @@ class ImageColor:
 
         return [_[0] for _ in sorted_color_incidences]
 
-    @staticmethod
-    def get_dominant_color(cluster, color_incidences):
-        index_max = argmax(color_incidences)
-        peak = cluster[index_max]
-        return peak
-
 
 class GetColors:
-    def __init__(self, image):
-        self.ic = ImageColor(img=image)
+    def __init__(self, image, clusters=5):
+        self.ic = ImageColor(img=image, clusters=clusters)
 
-    def get_palette(self, amount=5):
-        color_cluster = self.ic.get_color_cluster(amount)
-
-        hex_colors = self.ic.get_hex(color_cluster)
-        incidences = self.ic.get_incidences(color_cluster)
-
+    def get_palette(self):
+        hex_colors = self.ic.get_hex()
+        incidences = self.ic.get_incidences()
         colors_incidences = self.ic.get_colors_incidences(hex_colors, incidences)
         return self.ic.get_sorted_colors(colors_incidences)
 
-    def get_dominant_color(self, precision=5):
-        color_cluster = self.ic.get_color_cluster(precision)
-        incidences = self.ic.get_incidences(color_cluster)
-        dominant = self.ic.get_dominant_color(color_cluster, incidences)
+    def get_dominant_color(self):
+        incidences = self.ic.get_incidences()
+        dominant = self.ic.get_dominant_color(incidences)
         return self.ic.get_hex([dominant])
 
 
 if __name__ == '__main__':
-    with PIL.Image.open('img.jpg') as img:
+    with PIL.Image.open(':D') as img:
         """
         -- Color --
         color = GetColors(img)
