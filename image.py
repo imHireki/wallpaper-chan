@@ -22,15 +22,16 @@ class Image(ABC):
         self.img_format: str = kwargs.get('img_format', 'jpeg')
 
     def get_name(self):
+        """ Return a Unix epoch time with image file extension """
         return '{}.jpg'.format(round(time()))
 
     @abstractmethod
-    def handle_rgba(self) -> None: pass
+    def improve_consistency(self): pass
 
     @abstractmethod
-    def resize(self) -> None: pass
+    def resize(self): pass
 
-    def save(self, at) -> None:
+    def save(self, at):
         """ Save image, on a BytesIO object or path """
         self.img.save(at,
                       format=self.img_format,
@@ -39,21 +40,26 @@ class Image(ABC):
 
 
 class Icon(Image):
-    def handle_rgba(self) -> None:
-        """ Add opaque white background to the alpha layer """
+    def improve_consistency(self):
+        """ Improve the image's consistency to avoid problems
+        TODO: call other functions from here, maybe also check the image here
+        """
+
+        # Create a white image with the same size as the image
         white_background = PIL.Image.new(
             mode='RGBA',
             size=self.img.size,
             color=(255, 255, 255)
             )
 
+        # Patch the alpha layer with the white_background and convert to RGB
         self.img = PIL.Image.alpha_composite(
             im1=white_background,
             im2=self.img
             ).convert('RGB')
 
-    def resize(self) -> None:
-        """ Resize self.image with `self.size` & `self.resample` """
+    def resize(self):
+        """ Perform the resize of the image """
         self.img = self.img.resize(
             size=self.size,
             resample=self.resample,
@@ -65,10 +71,11 @@ class Wallpaper(Image): pass
 
 
 class ImageFactory:
-    """ Image Factory returns a specific Image class """
+    """ Factory of Image classes """
 
     @staticmethod
     def for_icon(**kwargs):
+        """ Return icon instance """
         return Icon(**kwargs)
 
     @staticmethod
@@ -82,24 +89,29 @@ class ImageColor:
         self.color_cluster = self.get_color_cluster(kwargs.get('clusters'))
 
     def get_image_asarray(self):
+        """ Return the image as array """
         ar = asarray(self.img)
         shape = ar.shape
         return ar.reshape(product(shape[:2]),
                           shape[2]).astype(float)
 
     def get_color_cluster(self, clusters:int):
+        """ Return the cluster of colors """
         return cluster.vq.kmeans(self.img_asarray, clusters)[0]
 
     def get_dominant_color(self, color_incidences):
+        """ Return the most common color """
         index_max = argmax(color_incidences)
         peak = self.color_cluster[index_max]
         return peak
 
     def get_incidences(self):
+        """ Return the color's incidences """
         vecs = cluster.vq.vq(self.img_asarray, self.color_cluster)[0]
         return histogram(vecs, len(self.color_cluster))[0]
 
     def get_hex(self, cluster=None) -> list:
+        """ Return the color cluster converted to hex """
         if not cluster: cluster = self.color_cluster
         return [
             '#' +
@@ -111,7 +123,9 @@ class ImageColor:
 
     @staticmethod
     def get_colors_incidences(colors, incidences):
-        # Put it all back together as [ ('color', 'incidents'), ]
+        """ Return list with colors and its incidences """
+
+        # Put it all back together as [ ('color', 'incidences'), ]
         return [ (x, y)
                  for a, b in enumerate(colors)
                  for x, y in [
@@ -121,11 +135,13 @@ class ImageColor:
 
     @staticmethod
     def get_sorted_colors(color_incidences):
-        # Sort the color_incidences by its incidences in descending order
+        """ Return sorted colors by its incidences """
+
+        # sort color_incidences by its numbers of incidences
         sorted_color_incidences = sorted(color_incidences,
                                          key=lambda x: x[1],
                                          reverse=True)
-
+        # Return just the colors
         return [_[0] for _ in sorted_color_incidences]
 
 
@@ -134,19 +150,21 @@ class GetColors:
         self.ic = ImageColor(img=image, clusters=clusters)
 
     def get_palette(self):
+        """ Return the color palette """
         hex_colors = self.ic.get_hex()
         incidences = self.ic.get_incidences()
         colors_incidences = self.ic.get_colors_incidences(hex_colors, incidences)
         return self.ic.get_sorted_colors(colors_incidences)
 
     def get_dominant_color(self):
+        """ Return the most common color """
         incidences = self.ic.get_incidences()
         dominant = self.ic.get_dominant_color(incidences)
         return self.ic.get_hex([dominant])
 
 
 if __name__ == '__main__':
-    with PIL.Image.open(':D') as img:
+    with PIL.Image.open('xd') as img:
         """
         -- Color --
         color = GetColors(img)
@@ -154,9 +172,9 @@ if __name__ == '__main__':
         dc = color.get_dominant_color()
 
         -- Resize --
-        icon = ImageFactory.for_icon(img=img)
+        icon = ImageFactory.for_icon(img=img, size=(512,512))
         if img.mode == 'RGBA':
-            icon.handle_rgba()
+            icon.improve_consistency()
         icon.resize()
 
             -- Save To Stream --
