@@ -74,43 +74,43 @@ class ImageFactory:
     """ Factory of Image classes """
 
     @staticmethod
-    def for_icon(**kwargs):
+    def icon(**kwargs):
         """ Return icon instance """
         return Icon(**kwargs)
 
     @staticmethod
-    def for_wallpaper(): pass
+    def wallpaper(): pass
 
 
 class ImageColor:
     def __init__(self, **kwargs):
         self.img = kwargs.get('img', None)
-        self.img_asarray = self.get_image_asarray()
-        self.color_cluster = self.get_color_cluster(kwargs.get('clusters'))
+        self.img_asarray = self.image_as_array()
+        self.color_cluster = self.color_cluster(kwargs.get('clusters'))
 
-    def get_image_asarray(self):
+    def image_as_array(self):
         """ Return the image as array """
         ar = asarray(self.img)
         shape = ar.shape
         return ar.reshape(product(shape[:2]),
                           shape[2]).astype(float)
 
-    def get_color_cluster(self, clusters:int):
+    def color_cluster(self, clusters:int):
         """ Return the cluster of colors """
         return cluster.vq.kmeans(self.img_asarray, clusters)[0]
 
-    def get_dominant_color(self, color_incidences):
+    def dominant_color(self, color_incidences):
         """ Return the most common color """
         index_max = argmax(color_incidences)
         peak = self.color_cluster[index_max]
         return peak
 
-    def get_incidences(self):
+    def incidences(self):
         """ Return the color's incidences """
         vecs = cluster.vq.vq(self.img_asarray, self.color_cluster)[0]
         return histogram(vecs, len(self.color_cluster))[0]
 
-    def get_hex(self, cluster=None) -> list:
+    def hex_color(self, cluster=None) -> list:
         """ Return the color cluster converted to hex """
         if not cluster: cluster = self.color_cluster
         return [
@@ -122,7 +122,7 @@ class ImageColor:
         ]
 
     @staticmethod
-    def get_colors_incidences(colors, incidences):
+    def colors_incidences(colors, incidences):
         """ Return list with colors and its incidences """
 
         # Put it all back together as [ ('color', 'incidences'), ]
@@ -134,7 +134,7 @@ class ImageColor:
                  ]
 
     @staticmethod
-    def get_sorted_colors(color_incidences):
+    def sorted_colors(color_incidences):
         """ Return sorted colors by its incidences """
 
         # sort color_incidences by its numbers of incidences
@@ -149,37 +149,36 @@ class GetColors:
     def __init__(self, image, clusters=5):
         self.ic = ImageColor(img=image, clusters=clusters)
 
-    def get_palette(self):
+    def palette(self):
         """ Return the color palette """
-        hex_colors = self.ic.get_hex()
-        incidences = self.ic.get_incidences()
-        colors_incidences = self.ic.get_colors_incidences(hex_colors, incidences)
-        return self.ic.get_sorted_colors(colors_incidences)
+        hex_colors = self.ic.hex_color()
+        incidences = self.ic.incidences()
+        colors_incidences = self.ic.colors_incidences(hex_colors, incidences)
+        return self.ic.sorted_colors(colors_incidences)
 
-    def get_dominant_color(self):
+    def dominant_color(self):
         """ Return the most common color """
-        incidences = self.ic.get_incidences()
-        dominant = self.ic.get_dominant_color(incidences)
-        return self.ic.get_hex([dominant])[0]
+        incidences = self.ic.incidences()
+        dominant = self.ic.dominant_color(incidences)
+        return self.ic.hex_color([dominant])[0]
 
 
 if __name__ == '__main__':
     with PIL.Image.open('xd') as img:
         # # -- Color --
         # color = GetColors(img)
-        # palette = color.get_palette()
-        # dc = color.get_dominant_color()
+        # palette = color.palette()
+        # dc = color.dominant_color()
 
         # # -- Resize --
-        # icon = ImageFactory.for_icon(img=img, size=(512,512))
+        # icon = ImageFactory.icon(img=img, size=(512,512))
         # if img.mode == 'RGBA':
         #     icon.improve_consistency()
         # icon.resize()
 
-        # # -- Save To Stream --
+        # -- Save To Stream --
         # b_img = BytesIO()
         # icon.save(b_img)
-
-        # # -- Save To File --
-        # icon.save('path/to/file.jpg')
+        # -- Save To File --
+        # icon.save('k.jpg')
         ...
