@@ -9,7 +9,7 @@ from scipy import cluster
 import PIL.Image
 
 
-class Image(ABC):
+class _Image(ABC):
     # FIXME: support to PNG and GIF
     def __init__(self, **kwargs):
         self.img: object = kwargs.get('img', None)
@@ -39,7 +39,7 @@ class Image(ABC):
                       optimize=True)
 
 
-class Icon(Image):
+class Icon(_Image):
     def improve_consistency(self):
         """ Improve the image's consistency to avoid problems
         TODO: call other functions from here, maybe also check the image here
@@ -67,10 +67,10 @@ class Icon(Image):
             )
 
 
-class Wallpaper(Image): pass
+class Wallpaper(_Image): pass
 
 
-class ImageFactory:
+class Image:
     """ Factory of Image classes """
 
     @staticmethod
@@ -162,16 +162,51 @@ class GetColors:
         dominant = self.ic.dominant_color(incidences)
         return self.ic.hex_color([dominant])[0]
 
+class Bulk:
+    def __init__(self, objs):
+        self.objs = objs
+
+    def resize(self, path=''):
+        """ Resize image objects as a batch
+
+        path -- the path for save the image (default: '')
+        """
+        batch = []
+
+        for obj in self.objs:
+            if obj.img.mode == 'RGBA':
+                obj.improve_consistency()
+
+            obj.resize()
+
+            if path:
+               obj.save('{}{}.jpg'.format(path, obj.name))
+
+            bytes_img = BytesIO()
+            obj.save(bytes_img)
+            batch.append(bytes_img)
+
+        return batch
+
 
 if __name__ == '__main__':
     with PIL.Image.open('xd') as img:
+
+        # images = Bulk([
+        #     Image.icon(img=img, size=size)
+        #     for size in [(512, 512),
+        #                  (256, 256),
+        #                  (128, 128),
+        #                  (80 , 80 )]
+        # ]).resize()
+
         # # -- Color --
         # color = GetColors(img)
         # palette = color.palette()
         # dc = color.dominant_color()
 
         # # -- Resize --
-        # icon = ImageFactory.icon(img=img, size=(512,512))
+        # icon = Image.icon(img=img, size=(512,512))
         # if img.mode == 'RGBA':
         #     icon.improve_consistency()
         # icon.resize()
