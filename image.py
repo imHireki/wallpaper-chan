@@ -160,27 +160,26 @@ class GetColors:
         """ Return the most common color """
         incidences = self.ic.get_incidences()
         dominant = self.ic.get_dominant_color(incidences)
-        return self.ic.get_hex([dominant])
+        return self.ic.get_hex([dominant])[0]
 
 
 if __name__ == '__main__':
     with PIL.Image.open('xd') as img:
-        """
-        -- Color --
-        color = GetColors(img)
-        palette = color.get_palette()
-        dc = color.get_dominant_color()
+        # # -- Color --
+        # color = GetColors(img)
+        # palette = color.get_palette()
+        # dc = color.get_dominant_color()
 
-        -- Resize --
-        icon = ImageFactory.for_icon(img=img, size=(512,512))
-        if img.mode == 'RGBA':
-            icon.improve_consistency()
-        icon.resize()
+        # # -- Resize --
+        # icon = ImageFactory.for_icon(img=img, size=(512,512))
+        # if img.mode == 'RGBA':
+        #     icon.improve_consistency()
+        # icon.resize()
 
-            -- Save To Stream --
-            b_img = BytesIO()
-            icon.save(b_img)
+        # # -- Save To Stream --
+        # b_img = BytesIO()
+        # icon.save(b_img)
 
-            -- Save To File --
-            icon.save('path/to/file.jpg')
-        """
+        # # -- Save To File --
+        # icon.save('path/to/file.jpg')
+        ...
