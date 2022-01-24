@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from abc import ABC, abstractmethod
 from io import BytesIO
-from time import time
+from time import time_ns
 
 from numpy import asarray, product, histogram, argmax
 from binascii import hexlify
@@ -10,7 +10,6 @@ import PIL.Image
 
 
 class _Image(ABC):
-    # FIXME: support to PNG and GIF
     def __init__(self, **kwargs):
         self.img: object = kwargs.get('img', None)
 
@@ -23,7 +22,7 @@ class _Image(ABC):
 
     def get_name(self):
         """ Return a Unix epoch time with image file extension """
-        return '{}.jpg'.format(round(time()))
+        return '{}.jpg'.format(time_ns())
 
     @abstractmethod
     def improve_consistency(self): pass
@@ -168,6 +167,7 @@ class Bulk:
 
     def resize(self, path=''):
         """ Resize image objects as a batch
+        Return its bytes objects, if path is specified, also save it.
 
         path -- the path for save the image (default: '')
         """
@@ -180,7 +180,7 @@ class Bulk:
             obj.resize()
 
             if path:
-               obj.save('{}{}.jpg'.format(path, obj.name))
+               obj.save('{}{}'.format(path, obj.name))
 
             bytes_img = BytesIO()
             obj.save(bytes_img)
@@ -188,32 +188,3 @@ class Bulk:
 
         return batch
 
-
-if __name__ == '__main__':
-    with PIL.Image.open('xd') as img:
-
-        # images = Bulk([
-        #     Image.icon(img=img, size=size)
-        #     for size in [(512, 512),
-        #                  (256, 256),
-        #                  (128, 128),
-        #                  (80 , 80 )]
-        # ]).resize()
-
-        # # -- Color --
-        # color = GetColors(img)
-        # palette = color.palette()
-        # dc = color.dominant_color()
-
-        # # -- Resize --
-        # icon = Image.icon(img=img, size=(512,512))
-        # if img.mode == 'RGBA':
-        #     icon.improve_consistency()
-        # icon.resize()
-
-        # -- Save To Stream --
-        # b_img = BytesIO()
-        # icon.save(b_img)
-        # -- Save To File --
-        # icon.save('k.jpg')
-        ...
