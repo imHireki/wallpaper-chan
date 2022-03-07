@@ -9,6 +9,9 @@ from scipy import cluster
 import PIL.Image
 
 
+def open(fp, mode="r", formats=None):
+    return PIL.Image.open(fp, mode, formats)
+
 class _Image(ABC):
     def __init__(self, **kwargs):
         self.img: object = kwargs.get('img', None)
@@ -67,7 +70,6 @@ class Icon(_Image):
 
 
 class Wallpaper(_Image): pass
-
 
 class Image:
     """ Factory of Image classes """
@@ -160,6 +162,7 @@ class GetColors:
         incidences = self.ic.incidences()
         dominant = self.ic.dominant_color(incidences)
         return self.ic.hex_color([dominant])[0]
+
 
 class Bulk:
     def __init__(self, objs):
