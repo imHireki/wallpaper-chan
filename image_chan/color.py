@@ -65,3 +65,21 @@ class ImageColor:
                                          reverse=True)
         # Return just the colors
         return [_[0] for _ in sorted_color_incidences]
+
+
+class GetColors:
+    def __init__(self, image, clusters=5):
+        self.ic = ImageColor(img=image, clusters=clusters)
+
+    def palette(self):
+        """ Return the color palette """
+        hex_colors = self.ic.hex_color()
+        incidences = self.ic.incidences()
+        colors_incidences = self.ic.colors_incidences(hex_colors, incidences)
+        return self.ic.sorted_colors(colors_incidences)
+
+    def dominant_color(self):
+        """ Return the most common color """
+        incidences = self.ic.incidences()
+        dominant = self.ic.dominant_color(incidences)
+        return self.ic.hex_color([dominant])[0]
