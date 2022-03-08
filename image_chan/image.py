@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
+from typing import Tuple, Dict, List, Union
 from abc import ABC, abstractmethod
 from io import BytesIO
-from time import time_ns
 
-from numpy import asarray, product, histogram, argmax
-from binascii import hexlify
-from scipy import cluster
-import PIL.Image
+import PIL.Image, PIL.ImageSequence
 
 
 def open(fp, mode="r", formats=None):
