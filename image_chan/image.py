@@ -5,6 +5,8 @@ from io import BytesIO
 
 import PIL.Image, PIL.ImageSequence
 
+from .exception import ImageSupportError
+
 
 def open(fp, mode="r", formats=None):
     return PIL.Image.open(fp, mode, formats)
