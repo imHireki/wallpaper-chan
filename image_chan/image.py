@@ -9,6 +9,10 @@ import PIL.Image, PIL.ImageSequence
 def open(fp, mode="r", formats=None):
     return PIL.Image.open(fp, mode, formats)
 
+def is_animated(image):
+    return getattr(image, 'is_animated', False)
+
+
 class _Image(ABC):
     def __init__(self, **kwargs):
         self.img: object = kwargs.get('img', None)
