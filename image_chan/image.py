@@ -74,17 +74,6 @@ class Icon(_Image):
 
 class Wallpaper(_Image): pass
 
-class Image:
-    """ Factory of Image classes """
-
-    @staticmethod
-    def icon(**kwargs):
-        """ Return icon instance """
-        return Icon(**kwargs)
-
-    @staticmethod
-    def wallpaper(): pass
-
 
 class ImageColor:
     def __init__(self, **kwargs):
