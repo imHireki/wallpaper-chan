@@ -15,16 +15,12 @@ def is_animated(image):
     return getattr(image, 'is_animated', False)
 
 
-class _Image(ABC):
-    def __init__(self, **kwargs):
-        self.img: object = kwargs.get('img', None)
-
-        self.size: tuple = kwargs.get('size', self.img.size)
-        self.quality: int = kwargs.get('quality', 100)
-        self.resample: object = kwargs.get('resample', PIL.Image.LANCZOS)
-
-        self.name: str = kwargs.get('name', self.get_name())
-        self.img_format: str = kwargs.get('img_format', 'jpeg')
+class Image:
+    def __init__(self, image, size, format='WEBP', fp=None):
+        self.image = image
+        self.size = size
+        self.format = format
+        self.fp = fp
 
     def get_name(self):
         """ Return a Unix epoch time with image file extension """
