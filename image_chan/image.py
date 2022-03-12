@@ -22,10 +22,6 @@ class Image:
         self.format = format
         self.fp = fp
 
-    @abstractmethod
-    def improve_consistency(self): pass
-
-    @abstractmethod
     def resize(self): pass
 
     def save(self, at):
