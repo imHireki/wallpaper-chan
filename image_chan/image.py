@@ -22,10 +22,6 @@ class Image:
         self.format = format
         self.fp = fp
 
-    def get_name(self):
-        """ Return a Unix epoch time with image file extension """
-        return '{}.jpg'.format(time_ns())
-
     @abstractmethod
     def improve_consistency(self): pass
 
