@@ -22,14 +22,17 @@ class Image:
         self.format = format
         self.fp = fp
 
-    def resize(self): pass
+    def resize(self):
+        """Resize the image."""
+        self.image = self.image.resize(
+            self.size, self.RESAMPLE, reducing_gap=self.REDUCING_GAP
+            )
 
-    def save(self, at):
-        """ Save image, on a BytesIO object or path """
-        self.img.save(at,
-                      format=self.img_format,
-                      quality=self.quality,
-                      optimize=True)
+    def save(self, **params):
+        """Save the image on a BytesIO object or path."""
+        self.image.save(
+            self.fp, self.format, quality=self.QUALITY, optimize=True, **params
+            )
 
 
 class Icon(_Image):
