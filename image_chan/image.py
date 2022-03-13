@@ -23,6 +23,14 @@ class Image:
         self.fp = fp
 
     @property
+    def fp(self):
+        return self._fp
+
+    @fp.setter
+    def fp(self, fp):
+        self._fp = fp if fp else BytesIO()
+
+    @property
     def image(self):
         return self._image
 
