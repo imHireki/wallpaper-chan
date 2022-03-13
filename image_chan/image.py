@@ -40,6 +40,25 @@ class Image:
         if self.image.mode == 'RGBA' and not self.has_translucent_alpha:
             self.image = self.image.convert(mode='RGB')
 
+    @property
+    def format(self):
+        return self._format
+
+    @format.setter
+    def format(self, format):
+        if isinstance(format, (tuple, list)) and len(format) > 1:
+            # Set the best format, if more than one was specified.
+            if self.is_animated and 'GIF' in format:
+                self._format = 'GIF'
+
+            elif self.image.mode == 'RGBA' and 'PNG' in format:
+                self._format = 'PNG'
+
+            elif self.image.mode == 'RGB' and 'JPEG' in format:
+                self._format = 'JPEG'
+        else:
+            self._format = format
+
     def resize(self):
         """Resize the image."""
         self.image = self.image.resize(
