@@ -67,6 +67,21 @@ class Image:
         else:
             self._format = format
 
+    @property
+    def is_supported(self):
+        if not self.image.mode in self.SUPPORTED_MODES:
+            return False
+
+        if self.image.format:
+            if not self.image.format in self.SUPPORTED_FORMATS:
+                return False
+
+        return True
+
+    @property
+    def is_animated(self):
+        return is_animated(self.image)
+
     def resize(self):
         """Resize the image."""
         self.image = self.image.resize(
