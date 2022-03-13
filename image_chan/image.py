@@ -22,6 +22,24 @@ class Image:
         self.format = format
         self.fp = fp
 
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, image):
+        self._image = image
+
+        if not self.is_supported:
+            raise ImageSupportError(
+                f'Image {self.image.format, self.image.mode}'
+                f'not in {self.SUPPORTED_IMAGES}'
+                )
+
+        # Has alpha channel without using translucency.
+        if self.image.mode == 'RGBA' and not self.has_translucent_alpha:
+            self.image = self.image.convert(mode='RGB')
+
     def resize(self):
         """Resize the image."""
         self.image = self.image.resize(
