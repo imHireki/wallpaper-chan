@@ -121,7 +121,16 @@ class Icon(Image):
     }
 
 
-class Wallpaper(_Image): pass
+class Wallpaper(Image):
+    RESAMPLE = 2
+    REDUCING_GAP = 2.0
+
+    QUALITY = 75
+
+    SUPPORTED_IMAGES = {
+        'RGB': ('JPEG', 'PNG'),
+        'RGBA': ('PNG',),
+    }
 
 
 class Bulk:
