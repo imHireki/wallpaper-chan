@@ -108,32 +108,17 @@ class Image:
             )
 
 
-class Icon(_Image):
-    def improve_consistency(self):
-        """ Improve the image's consistency to avoid problems
-        TODO: call other functions from here, maybe also check the image here
-        """
+class Icon(Image):
+    RESAMPLE = 1
+    REDUCING_GAP = 2.0
 
-        # Create a white image with the same size as the image
-        white_background = PIL.Image.new(
-            mode='RGBA',
-            size=self.img.size,
-            color=(255, 255, 255)
-            )
+    QUALITY = 70
 
-        # Patch the alpha layer with the white_background and convert to RGB
-        self.img = PIL.Image.alpha_composite(
-            im1=white_background,
-            im2=self.img
-            ).convert('RGB')
-
-    def resize(self):
-        """ Perform the resize of the image """
-        self.img = self.img.resize(
-            size=self.size,
-            resample=self.resample,
-            reducing_gap=2.0
-            )
+    SUPPORTED_IMAGES = {
+        'RGB': ('JPEG', 'PNG', 'WEBP', 'GIF'),
+        'RGBA': ('PNG', 'GIF', 'WEBP'),
+        'P': ('GIF',)
+    }
 
 
 class Wallpaper(_Image): pass
