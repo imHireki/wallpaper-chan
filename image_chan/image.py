@@ -82,6 +82,11 @@ class Image:
     def is_animated(self):
         return is_animated(self.image)
 
+    @property
+    def has_translucent_alpha(self):
+        """Return True if alpha isn't opaque."""
+        return True if self.image.getextrema()[-1][0] < 255 else False
+
     def resize(self):
         """Resize the image."""
         self.image = self.image.resize(
