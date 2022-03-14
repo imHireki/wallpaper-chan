@@ -87,6 +87,14 @@ class Image:
         """Return True if alpha isn't opaque."""
         return True if self.image.getextrema()[-1][0] < 255 else False
 
+    @property
+    def SUPPORTED_MODES(self):
+        return tuple(self.SUPPORTED_IMAGES.keys())
+
+    @property
+    def SUPPORTED_FORMATS(self):
+        return self.SUPPORTED_IMAGES.get(self.image.mode)
+
     def resize(self):
         """Resize the image."""
         self.image = self.image.resize(
