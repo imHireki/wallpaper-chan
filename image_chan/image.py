@@ -108,6 +108,18 @@ class Image:
             )
 
 
+class Wallpaper(Image):
+    RESAMPLE = 2
+    REDUCING_GAP = 2.0
+
+    QUALITY = 75
+
+    SUPPORTED_IMAGES = {
+        'RGB': ('JPEG', 'PNG'),
+        'RGBA': ('PNG',),
+    }
+
+
 class Icon(Image):
     RESAMPLE = 1
     REDUCING_GAP = 2.0
@@ -121,16 +133,20 @@ class Icon(Image):
     }
 
 
-class Wallpaper(Image):
-    RESAMPLE = 2
-    REDUCING_GAP = 2.0
+class AnimatedIcon(Icon):
+    def resize_frames(self):
+        """Generate the frame sequence resized."""
+        for frame in PIL.ImageSequence.Iterator(self.image):
+            self.image = frame
+            self.resize()
+            yield self.image
 
-    QUALITY = 75
+    def save_frames(self, frames):
+        first_image = next(frames)
+        frames = list(frames)
 
-    SUPPORTED_IMAGES = {
-        'RGB': ('JPEG', 'PNG'),
-        'RGBA': ('PNG',),
-    }
+        self.image = first_image
+        self.save(loop=0, save_all=True, append_images=frames)
 
 
 class Bulk:
