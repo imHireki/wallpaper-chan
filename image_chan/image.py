@@ -149,30 +149,23 @@ class AnimatedIcon(Icon):
         self.save(loop=0, save_all=True, append_images=frames)
 
 
-class Bulk:
-    def __init__(self, objs):
-        self.objs = objs
+class BulkResize:
+    def __init__(self, objects):
+        self.objects = objects
 
-    def resize(self, path=''):
-        """ Resize image objects as a batch
-        Return its bytes objects, if path is specified, also save it.
+    def resize_save(self, obj):
+        obj.resize()
+        obj.save()
 
-        path -- the path for save the image (default: '')
-        """
-        batch = []
+    def resize_save_animated(self, obj):
+        resized_frames = obj.resize_frames()
+        obj.save_frames(resized_frames)
 
-        for obj in self.objs:
-            if obj.img.mode == 'RGBA':
-                obj.improve_consistency()
-
-            obj.resize()
-
-            if path:
-               obj.save('{}{}'.format(path, obj.name))
-
-            bytes_img = BytesIO()
-            obj.save(bytes_img)
-            batch.append(bytes_img)
-
-        return batch
-
+    @property
+    def batch(self):
+        for obj in self.objects:
+            if isinstance(obj, AnimatedIcon):
+                self.resize_save_animated(obj)
+            else:
+                self.resize_save(obj)
+            yield obj.fp
