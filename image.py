@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 from typing import Tuple, Dict, List, Union
-from abc import ABC, abstractmethod
 from io import BytesIO
 
 import PIL.Image, PIL.ImageSequence
 
-from .exception import ImageSupportError
+from exception import ImageSupportError
 
 
 def open(fp, mode="r", formats=None):
@@ -169,3 +168,20 @@ class BulkResize:
             else:
                 self.resize_save(obj)
             yield obj.fp
+
+
+if __name__ == '__main__':
+    with open('200.gif') as image:
+
+        images = BulkResize([
+            Icon(image=image, size=size, format=format)
+            if not is_animated(image) else
+            AnimatedIcon(image=image, size=size, format=format)
+
+            for size, format in [
+                ((256, 256), 'WEBP'),
+                (image.size, ('JPEG', 'PNG', 'GIF'))
+                ]
+        ]).batch
+
+        print([x for x in images])
