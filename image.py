@@ -8,13 +8,27 @@ from exception import ImageSupportError
 
 
 def open(fp, mode="r", formats=None):
+    """Open and identify the given image."""
     return PIL.Image.open(fp, mode, formats)
 
 def is_animated(image):
+    """Return whether or not the image has multiple frames."""
     return getattr(image, 'is_animated', False)
 
 
 class Image:
+    """Manage the image.
+
+    Check whether the class has support for the image.
+    Perform resize, save and convert the format and mode, if necessary.
+
+    Args:
+        image (PIL.Image.Image): An opened image with `open()`.
+        size (Tuple[int, int]): The size to resize the image.
+        format (str): The format to save the image. Default to 'WEBP'.
+        fp (Union[str, BytesIO]): The file path to save the image or a
+            BytesIO object. Default to None.
+    """
     def __init__(self, image, size, format='WEBP', fp=None):
         self.image = image
         self.size = size
@@ -22,15 +36,8 @@ class Image:
         self.fp = fp
 
     @property
-    def fp(self):
-        return self._fp
-
-    @fp.setter
-    def fp(self, fp):
-        self._fp = fp if fp else BytesIO()
-
-    @property
-    def image(self):
+    def image(self) -> PIL.Image.Image:
+        """The image to perform the actions."""
         return self._image
 
     @image.setter
@@ -48,26 +55,37 @@ class Image:
             self.image = self.image.convert(mode='RGB')
 
     @property
-    def format(self):
+    def fp(self) -> Union[str, BytesIO]:
+        """The file path or BytesIO object to save the image."""
+        return self._fp
+
+    @fp.setter
+    def fp(self, fp):
+        self._fp = fp if fp else BytesIO()
+
+    @property
+    def format(self) -> str:
+        """The format to save the image."""
         return self._format
 
     @format.setter
     def format(self, format):
+        # Set the best format, if more than one was specified.
         if isinstance(format, (tuple, list)) and len(format) > 1:
-            # Set the best format, if more than one was specified.
             if self.is_animated and 'GIF' in format:
                 self._format = 'GIF'
-
             elif self.image.mode == 'RGBA' and 'PNG' in format:
                 self._format = 'PNG'
-
             elif self.image.mode == 'RGB' and 'JPEG' in format:
                 self._format = 'JPEG'
+            else:
+                self._format = 'WEBP'
         else:
             self._format = format
 
     @property
-    def is_supported(self):
+    def is_supported(self) -> bool:
+        """Return whether or not the image is supported."""
         if not self.image.mode in self.SUPPORTED_MODES:
             return False
 
@@ -78,30 +96,44 @@ class Image:
         return True
 
     @property
-    def is_animated(self):
+    def is_animated(self) -> bool:
+        """Return whether or not the image has multiple frames."""
         return is_animated(self.image)
 
     @property
-    def has_translucent_alpha(self):
-        """Return True if alpha isn't opaque."""
+    def has_translucent_alpha(self) -> bool:
+        """Return wether or not the alpha channel is translucent."""
         return True if self.image.getextrema()[-1][0] < 255 else False
 
     @property
-    def SUPPORTED_MODES(self):
+    def SUPPORTED_MODES(cls) -> Tuple[str]:
+        """Return the supported modes from the SUPPORTED_IMAGES constant."""
         return tuple(self.SUPPORTED_IMAGES.keys())
 
     @property
-    def SUPPORTED_FORMATS(self):
+    def SUPPORTED_FORMATS(self) -> List[str]:
+        """Return the supported formats from the SUPPORTED_IMAGES constant."""
         return self.SUPPORTED_IMAGES.get(self.image.mode)
 
     def resize(self):
-        """Resize the image."""
+        """Perform resize on the image.
+
+        Use `size`, `RESAMPLE` and `REDUCING_GAP` attr as parameters to
+        resize the `image`.
+        """
         self.image = self.image.resize(
             self.size, self.RESAMPLE, reducing_gap=self.REDUCING_GAP
             )
 
     def save(self, **params):
-        """Save the image on a BytesIO object or path."""
+        """Save the image.
+
+        Use `fp`, `format`, `QUALITY` and params, if present, to save
+        the image.
+
+        Args:
+            params: The extra kwargs to save the image.
+        """
         self.image.save(
             self.fp, self.format, quality=self.QUALITY, optimize=True, **params
             )
