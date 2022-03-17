@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from typing import Tuple, Dict, List, Union
+from typing import Tuple, Dict, List, Union, Generator
 from io import BytesIO
 
 import PIL.Image, PIL.ImageSequence
@@ -181,6 +181,8 @@ class Icon(Image):
 
 
 class AnimatedIcon(Icon):
+    """Add support to images with multiple frames."""
+
     def resize_frames(self):
         """Generate the frame sequence resized."""
         for frame in PIL.ImageSequence.Iterator(self.image):
@@ -188,7 +190,8 @@ class AnimatedIcon(Icon):
             self.resize()
             yield self.image
 
-    def save_frames(self, frames):
+    def save_frames(self, frames:Generator[PIL.Image.Image]):
+        """Save all the frames into the first one."""
         first_image = next(frames)
         frames = list(frames)
 
