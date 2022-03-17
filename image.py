@@ -117,7 +117,7 @@ class Image:
         return True if self.image.getextrema()[-1][0] < 255 else False
 
     @property
-    def SUPPORTED_MODES(cls) -> Tuple[str]:
+    def SUPPORTED_MODES(self) -> Tuple[str]:
         """Return the supported modes from the SUPPORTED_IMAGES constant."""
 
         return tuple(self.SUPPORTED_IMAGES.keys())
@@ -193,7 +193,7 @@ class AnimatedIcon(Icon):
             self.resize()
             yield self.image
 
-    def save_frames(self, frames:Generator[PIL.Image.Image]):
+    def save_frames(self, frames:Generator):
         """Save all the frames into the first one."""
         first_image = next(frames)
         frames = list(frames)
