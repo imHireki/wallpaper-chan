@@ -9,10 +9,12 @@ from exception import ImageSupportError
 
 def open(fp, mode="r", formats=None):
     """Open and identify the given image."""
+
     return PIL.Image.open(fp, mode, formats)
 
 def is_animated(image):
     """Return whether or not the image has multiple frames."""
+
     return getattr(image, 'is_animated', False)
 
 
@@ -29,6 +31,7 @@ class Image:
         fp (Union[str, BytesIO]): The file path to save the image or a
             BytesIO object. Default to None.
     """
+
     def __init__(self, image, size, format='WEBP', fp=None):
         self.image = image
         self.size = size
@@ -38,6 +41,7 @@ class Image:
     @property
     def image(self) -> PIL.Image.Image:
         """The image to perform the actions."""
+
         return self._image
 
     @image.setter
@@ -57,6 +61,7 @@ class Image:
     @property
     def fp(self) -> Union[str, BytesIO]:
         """The file path or BytesIO object to save the image."""
+
         return self._fp
 
     @fp.setter
@@ -66,6 +71,7 @@ class Image:
     @property
     def format(self) -> str:
         """The format to save the image."""
+
         return self._format
 
     @format.setter
@@ -86,33 +92,37 @@ class Image:
     @property
     def is_supported(self) -> bool:
         """Return whether or not the image is supported."""
+
         if not self.image.mode in self.SUPPORTED_MODES:
             return False
 
         if self.image.format:
             if not self.image.format in self.SUPPORTED_FORMATS:
                 return False
-
         return True
 
     @property
     def is_animated(self) -> bool:
         """Return whether or not the image has multiple frames."""
+
         return is_animated(self.image)
 
     @property
     def has_translucent_alpha(self) -> bool:
         """Return wether or not the alpha channel is translucent."""
+
         return True if self.image.getextrema()[-1][0] < 255 else False
 
     @property
     def SUPPORTED_MODES(cls) -> Tuple[str]:
         """Return the supported modes from the SUPPORTED_IMAGES constant."""
+
         return tuple(self.SUPPORTED_IMAGES.keys())
 
     @property
     def SUPPORTED_FORMATS(self) -> List[str]:
         """Return the supported formats from the SUPPORTED_IMAGES constant."""
+
         return self.SUPPORTED_IMAGES.get(self.image.mode)
 
     def resize(self):
@@ -121,6 +131,7 @@ class Image:
         Use `size`, `RESAMPLE` and `REDUCING_GAP` attr as parameters to
         resize the `image`.
         """
+
         self.image = self.image.resize(
             self.size, self.RESAMPLE, reducing_gap=self.REDUCING_GAP
             )
@@ -134,12 +145,15 @@ class Image:
         Args:
             params: The extra kwargs to save the image.
         """
+
         self.image.save(
             self.fp, self.format, quality=self.QUALITY, optimize=True, **params
             )
 
 
 class Wallpaper(Image):
+    """Wallpaper options."""
+
     RESAMPLE = 2
     REDUCING_GAP = 2.0
 
@@ -152,6 +166,8 @@ class Wallpaper(Image):
 
 
 class Icon(Image):
+    """Icon options."""
+
     RESAMPLE = 1
     REDUCING_GAP = 2.0
 
