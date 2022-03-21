@@ -24,7 +24,7 @@ class Options:
     QUALITY:int = 100
     SUPPORTED_IMAGES:Dict[str, tuple] = {}
 
-    def add_defaults(self, options):
+    def set_options(self, options):
         self.RESAMPLE = getattr(options, 'RESAMPLE', self.RESAMPLE)
         self.REDUCING_GAP = getattr(options, 'REDUCING_GAP', self.REDUCING_GAP)
         self.QUALITY = getattr(options, 'QUALITY', self.QUALITY)
@@ -84,11 +84,12 @@ class Image(Options, Info):
     """
 
     def __init__(self, image, size, format='WEBP', fp=None):
-        self.add_defaults(self)
+        self.set_options(self)
+
         self.image = image
         self.size = size
-        self.format = format
-        self.fp = fp
+        self.format = self.format(format)
+        self.fp = self.fp(fp)
 
     @property
     def image(self) -> PIL.Image.Image:
@@ -109,36 +110,24 @@ class Image(Options, Info):
         if self.image.mode == 'RGBA' and not self.has_translucent_alpha():
             self.image = self.image.convert(mode='RGB')
 
-    @property
-    def fp(self) -> Union[str, BytesIO]:
-        """The file path or BytesIO object to save the image."""
+    def fp(self, fp) -> Union[str, BytesIO]:
+        """Return the file path or BytesIO object to save the image."""
+        return fp if fp else BytesIO()
 
-        return self._fp
-
-    @fp.setter
-    def fp(self, fp):
-        self._fp = fp if fp else BytesIO()
-
-    @property
-    def format(self) -> str:
-        """The format to save the image."""
-
-        return self._format
-
-    @format.setter
     def format(self, format):
+        """Return the format to save the image."""
+
         # Set the best format, if more than one was specified.
         if isinstance(format, (tuple, list)) and len(format) > 1:
             if self.is_animated() and 'GIF' in format:
-                self._format = 'GIF'
+                return 'GIF'
             elif self.image.mode == 'RGBA' and 'PNG' in format:
-                self._format = 'PNG'
+                return 'PNG'
             elif self.image.mode == 'RGB' and 'JPEG' in format:
-                self._format = 'JPEG'
+                return 'JPEG'
             else:
-                self._format = 'WEBP'
-        else:
-            self._format = format
+                return 'WEBP'
+        return format
 
     def resize(self):
         """Perform resize on the image.
@@ -246,25 +235,3 @@ class BulkResize:
                 self.resize_save(obj)
             yield obj.fp
 
-
-
-
-if __name__ == '__main__':
-    with open('gordo.jpg') as image:
-
-        images = BulkResize([
-            Icon(image=image, size=size, format=format)
-            if not is_animated(image) else
-            AnimatedIcon(image=image, size=size, format=format)
-
-            for size, format in [
-                ((256, 256), 'WEBP'),
-                #(image.size, ('JPEG', 'PNG', 'GIF'))
-                ]
-        ]).batch
-
-        # for x in images:
-        #     with open(x) as i:
-        #         i.show(0)
-
-        print([x for x in images])
