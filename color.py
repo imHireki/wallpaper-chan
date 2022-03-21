@@ -107,21 +107,21 @@ class Colors:
     """
 
     def __init__(self, image, clusters=5):
-        self.ic = ColorCluster(image=image, clusters=clusters)
+        self.cc = ColorCluster(image=image, clusters=clusters)
 
     @property
     def palette(self) -> List[str]:
         """Return the color palette based on the number of clusters."""
 
-        return self.ic.sorted_colors(
-            self.ic.colors_incidences(self.ic.hex_color(), self.ic.incidences)
+        return self.cc.sorted_colors(
+            self.cc.colors_incidences(self.ic.hex_color(), self.ic.incidences)
         )
 
     @property
     def dominant_color(self) -> str:
         """Return the most common color."""
 
-        return self.ic.hex_color(
-            [self.ic.dominant_color(self.ic.incidences)]
+        return self.cc.hex_color(
+            [self.cc.dominant_color(self.ic.incidences)]
         )[0]
 
