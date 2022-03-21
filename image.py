@@ -108,7 +108,7 @@ class Image(Options, Info):
 
         # Has alpha channel without using translucency.
         if self.image.mode == 'RGBA' and not self.has_translucent_alpha():
-            self.image = self.image.convert(mode='RGB')
+            self._image = self._image.convert(mode='RGB')
 
     def fp(self, fp) -> Union[str, BytesIO]:
         """Return the file path or BytesIO object to save the image."""
@@ -235,3 +235,21 @@ class BulkResize:
                 self.resize_save(obj)
             yield obj.fp
 
+
+if __name__ == '__main__':
+    with open('gordo.jpg') as image:
+
+        images = BulkResize([
+            Icon(image=image, size=size, format=format)
+            if not is_animated(image) else
+            AnimatedIcon(image=image, size=size, format=format)
+
+            for size, format in [
+                ((256, 256), 'WEBP'),
+                #(image.size, ('JPEG', 'PNG', 'GIF'))
+                ]
+        ]).batch
+
+        for x in images:
+            with open(x) as i:
+                i.show(0)
