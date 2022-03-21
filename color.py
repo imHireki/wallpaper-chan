@@ -2,19 +2,13 @@
 from numpy import asarray, product, histogram, argmax
 from binascii import hexlify
 from scipy import cluster
+import PIL.Image
 
 
 class ImageColor:
     def __init__(self, image, clusters):
-        self.image_array = self._image_array(image)
-        self.color_cluster = self._color_cluster(clusters)
-
-    def _image_array(self, image):
-        ar = asarray(image)
-        return ar.reshape(product(ar.shape[:2]), ar.shape[2]).astype(float)
-
-    def _color_cluster(self, clusters):
-        return cluster.vq.kmeans2(self.image_array, clusters)[0]
+        self.image_array = self.image_array(image)
+        self.color_cluster = self.color_cluster(clusters)
 
     @property
     def incidences(self):
@@ -22,15 +16,20 @@ class ImageColor:
         vecs = cluster.vq.vq(self.image_array, self.color_cluster)[0]
         return histogram(vecs, len(self.color_cluster))[0]
 
+    def image_array(self, image):
+        ar = asarray(image)
+        return ar.reshape(product(ar.shape[:2]), ar.shape[2]).astype(float)
+
+    def color_cluster(self, clusters):
+        return cluster.vq.kmeans2(self.image_array, clusters)[0]
+
     def hexify_rgb_array(self, rgb):
-        # remove bytearray problems
         rgb_list = [int(value) for value in rgb if 256 > int(value) > 0]
         if len(rgb_list) != 3:
             return None
         return hexlify(bytearray(rgb_list)).decode('ascii')
 
     def hex_color(self, cluster=None):
-        # Remove None
         return [
             f'#{hex_rgb}' for rgb in cluster or self.color_cluster
             for hex_rgb in [self.hexify_rgb_array(rgb)] if hex_rgb
@@ -40,15 +39,9 @@ class ImageColor:
         """ Return the most common color """
         return self.color_cluster[argmax(color_incidences)]
 
-    def colors_incidences(self, colors, incidences):
-        """ Return list with colors and its incidences
-        Put it all back together as [ ('color', 'incidences'), ]
-        """
-        return map(self.attach_colors_incidences, colors, incidences)
-
     @staticmethod
-    def attach_colors_incidences(colors, incidences):
-         return (colors, incidences)
+    def colors_incidences(colors, incidences):
+        return map(lambda c, i: (c, i), colors, incidences)
 
     @staticmethod
     def sorted_colors(color_incidences):
