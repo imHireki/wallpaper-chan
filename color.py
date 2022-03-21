@@ -53,17 +53,29 @@ class ImageColor:
 
 
 class Colors:
+    """Handle an ImageColor object to get image's colors.
+
+    Args:
+        image (PIL.Image.Image): The image to extract the colors.
+        clusters (int): The amount of color cluster to split the image.
+
+    Attributes:
+        ic (ImageColor): The object to get the colors.
+    """
+
     def __init__(self, image, clusters=10):
         self.ic = ImageColor(image=image, clusters=clusters)
 
+    @property
     def palette(self):
-        """ Return the color palette """
+        """Return the color palette based on the number of clusters."""
         return self.ic.sorted_colors(
             self.ic.colors_incidences(self.ic.hex_color(), self.ic.incidences)
         )
 
+    @property
     def dominant_color(self):
-        """ Return the most common color """
+        """Return the most common color."""
         return self.ic.hex_color(
             [self.ic.dominant_color(self.ic.incidences)]
         )[0]
