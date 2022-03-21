@@ -18,7 +18,55 @@ def is_animated(image):
     return getattr(image, 'is_animated', False)
 
 
-class Image:
+class Options:
+    RESAMPLE:int = 0
+    REDUCING_GAP:float = 0.0
+    QUALITY:int = 100
+    SUPPORTED_IMAGES:Dict[str, tuple] = {}
+
+    def add_defaults(self, options):
+        self.RESAMPLE = getattr(options, 'RESAMPLE', self.RESAMPLE)
+        self.REDUCING_GAP = getattr(options, 'REDUCING_GAP', self.REDUCING_GAP)
+        self.QUALITY = getattr(options, 'QUALITY', self.QUALITY)
+        self.SUPPORTED_IMAGES = getattr(
+            options, 'SUPPORTED_IMAGES', self.SUPPORTED_IMAGES
+        )
+
+    def supported_modes(self) -> list[str]:
+        """Return the supported modes from the SUPPORTED_IMAGES constant."""
+
+        return list(self.SUPPORTED_IMAGES.keys())
+
+    def supported_formats(self) -> List[str]:
+        """Return the supported formats from the SUPPORTED_IMAGES constant."""
+
+        return self.SUPPORTED_IMAGES.get(self.image.mode)
+
+
+class Info:
+    def is_supported(self) -> bool:
+        """Return whether or not the image is supported."""
+
+        if not self.image.mode in self.supported_modes():
+            return False
+
+        if self.image.format:
+            if not self.image.format in self.supported_formats():
+                return False
+        return True
+
+    def is_animated(self) -> bool:
+        """Return whether or not the image has multiple frames."""
+
+        return is_animated(self.image)
+
+    def has_translucent_alpha(self) -> bool:
+        """Return wether or not the alpha channel is translucent."""
+
+        return True if self.image.getextrema()[-1][0] < 255 else False
+
+
+class Image(Options, Info):
     """Manage the image.
 
     Check whether the class has support for the image.
@@ -36,6 +84,7 @@ class Image:
     """
 
     def __init__(self, image, size, format='WEBP', fp=None):
+        self.add_defaults(self)
         self.image = image
         self.size = size
         self.format = format
@@ -50,15 +99,14 @@ class Image:
     @image.setter
     def image(self, image):
         self._image = image
-
-        if not self.is_supported:
+        if not self.is_supported():
             raise ImageSupportError(
                 f'Image {self.image.format, self.image.mode}'
                 f'not in {self.SUPPORTED_IMAGES}'
                 )
 
         # Has alpha channel without using translucency.
-        if self.image.mode == 'RGBA' and not self.has_translucent_alpha:
+        if self.image.mode == 'RGBA' and not self.has_translucent_alpha():
             self.image = self.image.convert(mode='RGB')
 
     @property
@@ -81,7 +129,7 @@ class Image:
     def format(self, format):
         # Set the best format, if more than one was specified.
         if isinstance(format, (tuple, list)) and len(format) > 1:
-            if self.is_animated and 'GIF' in format:
+            if self.is_animated() and 'GIF' in format:
                 self._format = 'GIF'
             elif self.image.mode == 'RGBA' and 'PNG' in format:
                 self._format = 'PNG'
@@ -91,42 +139,6 @@ class Image:
                 self._format = 'WEBP'
         else:
             self._format = format
-
-    @property
-    def is_supported(self) -> bool:
-        """Return whether or not the image is supported."""
-
-        if not self.image.mode in self.SUPPORTED_MODES:
-            return False
-
-        if self.image.format:
-            if not self.image.format in self.SUPPORTED_FORMATS:
-                return False
-        return True
-
-    @property
-    def is_animated(self) -> bool:
-        """Return whether or not the image has multiple frames."""
-
-        return is_animated(self.image)
-
-    @property
-    def has_translucent_alpha(self) -> bool:
-        """Return wether or not the alpha channel is translucent."""
-
-        return True if self.image.getextrema()[-1][0] < 255 else False
-
-    @property
-    def SUPPORTED_MODES(self) -> Tuple[str]:
-        """Return the supported modes from the SUPPORTED_IMAGES constant."""
-
-        return tuple(self.SUPPORTED_IMAGES.keys())
-
-    @property
-    def SUPPORTED_FORMATS(self) -> List[str]:
-        """Return the supported formats from the SUPPORTED_IMAGES constant."""
-
-        return self.SUPPORTED_IMAGES.get(self.image.mode)
 
     def resize(self):
         """Perform resize on the image.
@@ -156,7 +168,6 @@ class Image:
 
 class Wallpaper(Image):
     """Wallpaper options."""
-
     RESAMPLE = 2
     REDUCING_GAP = 2.0
 
@@ -235,3 +246,25 @@ class BulkResize:
                 self.resize_save(obj)
             yield obj.fp
 
+
+
+
+if __name__ == '__main__':
+    with open('gordo.jpg') as image:
+
+        images = BulkResize([
+            Icon(image=image, size=size, format=format)
+            if not is_animated(image) else
+            AnimatedIcon(image=image, size=size, format=format)
+
+            for size, format in [
+                ((256, 256), 'WEBP'),
+                #(image.size, ('JPEG', 'PNG', 'GIF'))
+                ]
+        ]).batch
+
+        # for x in images:
+        #     with open(x) as i:
+        #         i.show(0)
+
+        print([x for x in images])
