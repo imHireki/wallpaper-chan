@@ -5,6 +5,7 @@ import PIL.Image
 from sys import stdout
 from io import BytesIO
 from image import Icon, Image, AnimatedIcon
+from utils import BulkResize
 from exceptions import ImageSupportError
 
 
@@ -88,7 +89,26 @@ class TestImage(unittest.TestCase):
             self.assertEqual(new_size, saved_image.size)
             self.assertEqual(new_format, saved_image.format)
 
-    def test_bulk_resize(self): pass
+    def test_bulk_resize(self):
+        webp_5050 = ((50, 50), 'WEBP')
+        png_1010 = ((10, 10), 'PNG')
+
+        images = BulkResize([
+            Icon(image=self.supported_image, size=size, format=format)
+            for size, format in [webp_5050, png_1010]
+        ]).batch
+
+        first_image = next(images)
+
+        with PIL.Image.open(first_image) as resized_image:
+            self.assertEqual(webp_5050[0], resized_image.size)
+            self.assertEqual(webp_5050[1], resized_image.format)
+
+        second_image = next(images)
+
+        with PIL.Image.open(first_image) as resized_image:
+            self.assertEqual(webp_5050[0], resized_image.size)
+            self.assertEqual(webp_5050[1], resized_image.format)
 
 
 if __name__ == '__main__':
