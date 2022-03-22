@@ -4,7 +4,7 @@ import unittest
 import PIL.Image
 from sys import stdout
 from io import BytesIO
-from image import Icon, Image
+from image import Icon, Image, AnimatedIcon
 from exceptions import ImageSupportError
 
 
@@ -75,7 +75,18 @@ class TestImage(unittest.TestCase):
             self.assertEqual(new_size, saved_image.size)
             self.assertEqual(new_format, saved_image.format)
 
-    def test_resize_save_aniated(self): pass
+    def test_resize_save_animated(self):
+        new_size = (10, 10)
+        new_format = 'WEBP'
+
+        image = AnimatedIcon(self.animated_image, new_size, new_format)
+
+        resized_frames = image.resize_frames()
+        image.save_frames(resized_frames)
+
+        with PIL.Image.open(image.fp) as saved_image:
+            self.assertEqual(new_size, saved_image.size)
+            self.assertEqual(new_format, saved_image.format)
 
     def test_bulk_resize(self): pass
 
