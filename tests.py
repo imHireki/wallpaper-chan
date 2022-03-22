@@ -62,7 +62,18 @@ class TestImage(unittest.TestCase):
 
         self.assertIsInstance(exc.exception, ImageSupportError)
 
-    def test_resize_save(self): pass
+    def test_resize_save(self):
+        new_size = (10, 10)
+        new_format = 'WEBP'
+
+        image = Icon(self.supported_image, new_size, new_format)
+
+        image.resize()
+        image.save()
+
+        with PIL.Image.open(image.fp) as saved_image:
+            self.assertEqual(new_size, saved_image.size)
+            self.assertEqual(new_format, saved_image.format)
 
     def test_resize_save_aniated(self): pass
 
