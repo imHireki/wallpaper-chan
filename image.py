@@ -19,12 +19,17 @@ def is_animated(image):
 
 
 class Options:
+    """Manage default image options."""
+
+    # Default Options
     RESAMPLE:int = 0
     REDUCING_GAP:float = 0.0
     QUALITY:int = 100
     SUPPORTED_IMAGES:Dict[str, tuple] = {}
 
     def set_options(self, options):
+        """Overwrite the default options, with the given options (obj)."""
+
         self.RESAMPLE = getattr(options, 'RESAMPLE', self.RESAMPLE)
         self.REDUCING_GAP = getattr(options, 'REDUCING_GAP', self.REDUCING_GAP)
         self.QUALITY = getattr(options, 'QUALITY', self.QUALITY)
@@ -44,6 +49,8 @@ class Options:
 
 
 class Info:
+    """Add status/information methods."""
+
     def is_supported(self) -> bool:
         """Return whether or not the image is supported."""
 
@@ -100,6 +107,7 @@ class Image(Options, Info):
     @image.setter
     def image(self, image):
         self._image = image
+
         if not self.is_supported():
             raise ImageSupportError(
                 f'Image {self.image.format, self.image.mode} '
