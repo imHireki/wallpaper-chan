@@ -106,9 +106,9 @@ class TestImage(unittest.TestCase):
 
         second_image = next(images)
 
-        with PIL.Image.open(first_image) as resized_image:
-            self.assertEqual(webp_5050[0], resized_image.size)
-            self.assertEqual(webp_5050[1], resized_image.format)
+        with PIL.Image.open(second_image) as resized_image:
+            self.assertEqual(png_1010[0], resized_image.size)
+            self.assertEqual(png_1010[1], resized_image.format)
 
 
 if __name__ == '__main__':
