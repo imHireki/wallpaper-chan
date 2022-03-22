@@ -4,7 +4,7 @@ from io import BytesIO
 
 import PIL.Image, PIL.ImageSequence
 
-from exception import ImageSupportError
+from exceptions import ImageSupportError
 
 
 def open(fp, mode="r", formats=None):
@@ -102,8 +102,8 @@ class Image(Options, Info):
         self._image = image
         if not self.is_supported():
             raise ImageSupportError(
-                f'Image {self.image.format, self.image.mode}'
-                f'not in {self.SUPPORTED_IMAGES}'
+                f'Image {self.image.format, self.image.mode} '
+                f'not in {tuple(self.SUPPORTED_IMAGES)}'
                 )
 
         # Has alpha channel without using translucency.
