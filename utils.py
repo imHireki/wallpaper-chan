@@ -37,23 +37,3 @@ class BulkResize:
                 self.resize_save(obj)
             yield obj.fp
 
-
-if __name__ == '__main__':
-    with open('gordo.jpg') as image:
-
-        images = BulkResize([
-            Icon(image=image, size=size, format=format)
-            if not is_animated(image) else
-            AnimatedIcon(image=image, size=size, format=format)
-
-            for size, format in [
-                ((256, 256), 'WEBP'),
-                #(image.size, ('JPEG', 'PNG', 'GIF'))
-                ]
-        ]).batch
-
-        # for x in images:
-        #     with open(x) as i:
-        #         i.show(0)
-
-        print([x for x in images])
