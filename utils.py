@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from typing import List
 import PIL.Image
+import PIL.ImageSequence
 from image import AnimatedIcon, Icon, is_animated, open
 
 
@@ -36,4 +37,25 @@ class BulkResize:
             else:
                 self.resize_save(obj)
             yield obj.fp
+
+
+def get_first_frame(image):
+    it = PIL.ImageSequence.Iterator(image)
+    return next(it)
+
+def has_translucent_alpha(image) -> bool:
+    """Return wether or not the alpha channel is translucent."""
+
+    return True if image.getextrema()[-1][0] < 255 else False
+
+def is_animated(image):
+    """Return whether or not the image has multiple frames."""
+
+    return getattr(image, 'is_animated', False)
+
+def patch_alpha(image):
+    return PIL.Image.alpha_composite(
+        im1=PIL.Image.new('RGBA', image.size, '#ffffff'),
+        im2=image
+    )
 
