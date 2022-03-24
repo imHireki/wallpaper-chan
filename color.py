@@ -151,5 +151,4 @@ class Colors:
     def dominant_color(self) -> str:
         """Return the most common color."""
 
-        return self.palette[0]
-
+        return self.palette[0] if self.palette else None

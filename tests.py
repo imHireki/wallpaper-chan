@@ -1,22 +1,28 @@
 #!/usr/bin/env python3
+from io import BytesIO
 import unittest
 
 import PIL.Image
-from sys import stdout
-from io import BytesIO
+
+import utils
 from image import Icon, Image, AnimatedIcon
-from utils import BulkResize
 from exceptions import ImageSupportError
 
 
 class DummyImage:
-    def create_image(self, mode, format):
+    """Help in the creation of images to test functions."""
+
+    def create_image(self, mode:str, format:str) -> PIL.Image.Image:
+        """Create a simple 25x25 image."""
+
         image = PIL.Image.new(mode, (25, 25))
         obj = BytesIO()
         image.save(obj, format)
         return obj
 
-    def create_animated_image(self, mode, format):
+    def create_animated_image(self, mode, format) -> PIL.Image.Image:
+        """Create a simple animated image with 5 frames."""
+
         frames = (PIL.Image.new(mode, (25, 25)) for x in range(5))
         image = next(frames)
         obj = BytesIO()
@@ -25,17 +31,25 @@ class DummyImage:
             image.save(obj, format)
         return obj
 
-    def animated_image(self):
+    def animated_image(self) -> PIL.Image.Image:
+        """Return an animated image."""
+
         return self.create_animated_image('RGBA', 'GIF')
 
-    def supported_image(self):
+    def supported_image(self) -> PIL.Image.Image:
+        """Return an supported image."""
+
         return self.create_image('RGB', 'JPEG')
 
-    def unsupported_image(self):
+    def unsupported_image(self) -> PIL.Image.Image:
+        """Return an unsupported image."""
+
         return self.create_image('L', 'PNG')
 
 
 class TestImage(unittest.TestCase):
+    """Test image related functions."""
+
     def setUp(self):
         """Add and open the images to run the tests."""
 
@@ -64,6 +78,8 @@ class TestImage(unittest.TestCase):
         self.assertIsInstance(exc.exception, ImageSupportError)
 
     def test_resize_save(self):
+        """Test the `resize` and `save` methods, using an image."""
+
         new_size = (10, 10)
         new_format = 'WEBP'
 
@@ -77,6 +93,8 @@ class TestImage(unittest.TestCase):
             self.assertEqual(new_format, saved_image.format)
 
     def test_resize_save_animated(self):
+        """Test the `resize` and `save` methods, using an animated image."""
+
         new_size = (10, 10)
         new_format = 'WEBP'
 
@@ -90,10 +108,12 @@ class TestImage(unittest.TestCase):
             self.assertEqual(new_format, saved_image.format)
 
     def test_bulk_resize(self):
+        """Test the BulkResize."""
+
         webp_5050 = ((50, 50), 'WEBP')
         png_1010 = ((10, 10), 'PNG')
 
-        images = BulkResize([
+        images = utils.BulkResize([
             Icon(image=self.supported_image, size=size, format=format)
             for size, format in [webp_5050, png_1010]
         ]).batch
