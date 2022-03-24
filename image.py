@@ -5,7 +5,7 @@ from io import BytesIO
 import PIL.Image, PIL.ImageSequence
 
 from exceptions import ImageSupportError
-from utils import is_animated
+import utils
 
 
 class Options:
@@ -55,7 +55,7 @@ class Info:
     def is_animated(self) -> bool:
         """Return whether or not the image has multiple frames."""
 
-        return is_animated(self.image)
+        return utils.is_animated(self.image)
 
     def has_translucent_alpha(self) -> bool:
         """Return wether or not the alpha channel is translucent."""
@@ -198,3 +198,4 @@ class AnimatedIcon(Icon):
 
         self.image = first_image
         self.save(loop=0, save_all=True, append_images=frames)
+

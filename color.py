@@ -6,8 +6,7 @@ from numpy import asarray, product, histogram, ndarray
 from binascii import hexlify
 from scipy import cluster
 import PIL.Image
-
-from utils import has_translucent_alpha, patch_alpha
+import utils
 
 
 class ColorCluster:
@@ -129,8 +128,8 @@ class Colors:
                 if image.mode == 'P':
                     image = image.convert('RGBA')
 
-                if has_translucent_alpha(image):
-                    image = patch_alpha(image)
+                if utils.has_translucent_alpha(image):
+                    image = utils.patch_alpha(image)
 
                 image = image.convert('RGB')
 

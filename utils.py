@@ -61,3 +61,4 @@ class BulkResize:
             else:
                 self.resize_save(obj)
             yield obj.fp
+
