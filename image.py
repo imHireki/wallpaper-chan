@@ -5,17 +5,7 @@ from io import BytesIO
 import PIL.Image, PIL.ImageSequence
 
 from exceptions import ImageSupportError
-
-
-def open(fp, mode="r", formats=None):
-    """Open and identify the given image."""
-
-    return PIL.Image.open(fp, mode, formats)
-
-def is_animated(image):
-    """Return whether or not the image has multiple frames."""
-
-    return getattr(image, 'is_animated', False)
+from utils import is_animated
 
 
 class Options:

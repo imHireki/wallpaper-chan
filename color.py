@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
+from typing import List, Union, Mapping
+from io import BytesIO
+
 from numpy import asarray, product, histogram, ndarray
 from binascii import hexlify
 from scipy import cluster
-from typing import List, Dict, Union, Mapping
-from utils import get_first_frame, has_translucent_alpha, is_animated, patch_alpha
 import PIL.Image
-from io import BytesIO
+
+from utils import has_translucent_alpha, patch_alpha
 
 
 class ColorCluster:
@@ -95,21 +97,23 @@ class Colors:
     """Handle an ColorCluster object to get image's colors.
 
     Args:
-        image (PIL.Image.Image): The image to extract the colors.
+        fp (Union[str, BytesIO]): The image to extract the colors.
         clusters (int): The amount of color cluster to split the image.
 
     Attributes:
-        ic (ColorCluster): The object to get the colors.
+        cc (ColorCluster): The object to get the colors.
     """
 
     def __init__(self, fp, clusters=5):
         self.cc = self.cc(self.image(fp), clusters)
 
     def cc(self, fp, clusters):
+        """Return a ColorCluster object using fp and clusters."""
+
         with PIL.Image.open(fp) as image:
             return ColorCluster(image=image, clusters=clusters)
 
-    def image(self, fp):
+    def image(self, fp) -> Union[BytesIO, str]:
         """Return the fp/bytes of the image.
 
         Perform some validations.
@@ -118,6 +122,7 @@ class Colors:
 
         FIXME: Low precision with a patched alpha layer.
         """
+
         with PIL.Image.open(fp) as image:
             if image.mode in ['RGBA', 'P']:
 
@@ -146,5 +151,6 @@ class Colors:
     @property
     def dominant_color(self) -> str:
         """Return the most common color."""
+
         return self.palette[0]
 
