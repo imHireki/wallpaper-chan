@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from typing import List, Union, Mapping, Generator
-from io import BytesIO
 
 from binascii import hexlify
 import PIL.Image
+
 import utils
 
 
@@ -11,19 +11,23 @@ class ColorCluster:
     """Manage image's color cluster."""
 
     def __init__(self, image):
-        self.cluster = self.cluster(image)
+        self.image_rgb = self.image_rgb(image)
 
-    def cluster(self, image) -> Mapping:
+    def image_rgb(self, image):
+        red, green, blue = [image.getdata(band) for band in range(3)]
+        return red, green, blue
+
+    @property
+    def cluster(self) -> Mapping:
         """Return a RGB color cluster."""
 
-        red, green, blue = [image.getdata(band) for band in range(3)]
-        return list(map(lambda r, g, b: (r, g, b), red, green, blue))
+        return map(lambda r, g, b: (r, g, b), *self.image_rgb)
 
+    @property
     def color_incidences(self):
         """Return the color and its incidences"""
 
         color_incidences = {}
-
         for rgb in self.cluster:
             if rgb not in color_incidences:
                 color_incidences[rgb] = 1
@@ -45,12 +49,12 @@ class ColorCluster:
                                  reverse=True)
         ]
 
-    def hexify_rgb_array(self, rgb) -> str:
+    def hexify_rgb(self, rgb) -> str:
         """Return the hex of the given rgb."""
 
         return hexlify(bytearray(rgb)).decode('ascii')
 
-    def hex_color(self, cluster=None) -> List[str]:
+    def hex_color(self, cluster) -> List[str]:
         """Return a list with the hex from the color cluster.
 
         If color_cluster wasn't specified, return the hex
@@ -63,7 +67,7 @@ class ColorCluster:
 
         return [
             f'#{hex_rgb}' for rgb in cluster
-            for hex_rgb in [self.hexify_rgb_array(rgb)]
+            for hex_rgb in [self.hexify_rgb(rgb)]
         ]
 
 
@@ -93,19 +97,13 @@ class Colors:
     def palette(self, amount) -> List[str]:
         """Return the color palette based on the number of clusters."""
 
-        x = self.cc.sorted_colors(self.cc.color_incidences())[:amount]
+        x = self.cc.sorted_colors(self.cc.color_incidences)[:amount]
         return self.cc.hex_color(x)
 
     @property
     def dominant_color(self) -> str:
         """Return the most common color."""
 
-        x = [self.cc.sorted_colors(self.cc.color_incidences())[0]]
+        x = [self.cc.sorted_colors(self.cc.color_incidences)[0]]
         return self.cc.hex_color(x)
 
-
-if __name__ == '__main__':
-    with PIL.Image.open('200.gif') as image:
-        colors = Colors(image)
-        print(colors.palette(5))
-        print(colors.dominant_color)
