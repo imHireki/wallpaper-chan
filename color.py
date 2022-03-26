@@ -1,33 +1,44 @@
 #!/usr/bin/env python3
-from typing import List, Union, Mapping, Generator
-
+from typing import List, Union, Mapping, Generator, Dict, Tuple, Iterable
 from binascii import hexlify
+
 import PIL.Image
 
+import exceptions
 import utils
 
 
 class ColorCluster:
-    """Manage image's color cluster."""
+    """Manage the image's color cluster.
+
+    Args:
+        image (PIL.Image.Image): The image to extract the colors.
+
+    Attributes:
+        image (PIL.Image.Image): The image to extract the colors.
+    """
 
     def __init__(self, image):
-        self.image_rgb = self.image_rgb(image)
+        self.image = image
 
-    def image_rgb(self, image):
-        red, green, blue = [image.getdata(band) for band in range(3)]
+    @property
+    def image_rgb(self) -> Tuple[Iterable]:
+        """The red, green and blue iterable for each image's pixels."""
+
+        red, green, blue = [self.image.getdata(band) for band in range(3)]
         return red, green, blue
 
     @property
-    def cluster(self) -> Mapping:
-        """Return a RGB color cluster."""
+    def cluster(self) -> Mapping[Tuple[Iterable], Tuple[int]]:
+        """The color cluster of the image."""
 
         return map(lambda r, g, b: (r, g, b), *self.image_rgb)
 
-    @property
-    def color_incidences(self):
-        """Return the color and its incidences"""
+    def color_incidences(self) -> Dict[Tuple[int], int]:
+        """Return the RGB assigned to its incidences."""
 
         color_incidences = {}
+
         for rgb in self.cluster:
             if rgb not in color_incidences:
                 color_incidences[rgb] = 1
@@ -35,75 +46,71 @@ class ColorCluster:
                 color_incidences[rgb] += 1
         return color_incidences
 
-    @staticmethod
-    def sorted_colors(color_incidences) -> List[str]:
-        """Return the colors sorted by its incidences.
+    def sorted_colors(self) -> List[Tuple[int]]:
+        """Return the colors sorted by its incidences."""
 
-        Args:
-            color_incidences (Mapping[str, int]): The colors and
-                its incidences.
-        """
         return [
-            x[0] for x in sorted(color_incidences.items(),
-                                 key=lambda x: x[1],
-                                 reverse=True)
+            ci[0] for ci in sorted(self.color_incidences().items(),
+                                   key=lambda ci: ci[1],
+                                   reverse=True)
         ]
 
-    def hexify_rgb(self, rgb) -> str:
-        """Return the hex of the given rgb."""
+    def hexlify_rgb(self, rgb:Tuple[int]) -> str:
+        """Return the RGB converted to HEX.
+
+        Args:
+            rgb: A tuple with red, green and blue values.
+        """
 
         return hexlify(bytearray(rgb)).decode('ascii')
 
-    def hex_color(self, cluster) -> List[str]:
-        """Return a list with the hex from the color cluster.
-
-        If color_cluster wasn't specified, return the hex
-        from `self.color_cluster`.
+    def hexlify_cluster(self, cluster) -> List[str]:
+        """Return a list with the HEX from the cluster's RGBs.
 
         Args:
-            color_cluster (ndarray): The color cluster to be transformed as
-                hex colors.
+            cluster List[Tuple[int]]: A list with RGBs.
         """
 
-        return [
-            f'#{hex_rgb}' for rgb in cluster
-            for hex_rgb in [self.hexify_rgb(rgb)]
-        ]
+        return [f'#{hex}' for rgb in cluster for hex in [self.hexlify_rgb(rgb)]]
 
 
 class Colors:
-    """Handle an ColorCluster object to get image's colors.
-
-    Args:
-        clusters (int): The amount of color cluster to split the image.
+    """Control a ColorCluster object to get image's colors.
 
     Attributes:
+        _image (PIL.Image.Image): The image to extract the colors.
         cc (ColorCluster): The object to get the colors.
     """
 
     def __init__(self, image):
-        self.cc = self.cc(self.image(image))
-
-    def cc(self, image):
-        """Return a ColorCluster object using fp and clusters."""
-
-        return ColorCluster(image=image)
-
-    def image(self, image):
-        if image.mode == 'P':
-            image = image.convert('RGBA')
-        return image
-
-    def palette(self, amount) -> List[str]:
-        """Return the color palette based on the number of clusters."""
-
-        x = self.cc.sorted_colors(self.cc.color_incidences)[:amount]
-        return self.cc.hex_color(x)
+        self._image = image
+        self.cc = self.image
 
     @property
+    def image(self):
+        """Return a valid image."""
+
+        if self._image.mode == 'P':
+            self._image = self._image.convert('RGBA')
+        return self._image
+
+    @property
+    def cc(self):
+        """Return a ColorCluster object for the image."""
+
+        return self._cc
+
+    @cc.setter
+    def cc(self, image):
+        self._cc = ColorCluster(image)
+
+    def palette(self) -> List[str]:
+        """Return the color palette."""
+
+        return self.cc.hexlify_cluster(self.cc.sorted_colors()[:25:5])
+
     def dominant_color(self) -> str:
         """Return the most common color."""
 
-        x = [self.cc.sorted_colors(self.cc.color_incidences)[0]]
-        return self.cc.hex_color(x)
+        return self.cc.hexlify_cluster([self.cc.sorted_colors()[0]])
 

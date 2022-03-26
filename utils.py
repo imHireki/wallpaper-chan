@@ -29,6 +29,7 @@ def patch_alpha(image) -> PIL.Image.Image:
         im2=image
     )
 
+
 class BulkResize:
     """Resize all the given image objects.
 
