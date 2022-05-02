@@ -3,13 +3,13 @@ from typing import List
 
 import PIL.Image
 
-from . import image
+from . import image as img
 
 
 def has_translucent_alpha(image) -> bool:
     """Return wether or not the alpha channel is translucent."""
 
-    return True if image.getextrema()[-1][0] < 255 else False
+    return True if img.getextrema()[-1][0] < 255 else False
 
 def open(fp, mode="r", formats=None) -> PIL.Image.Image:
     """Open and identify the given image."""
@@ -28,7 +28,6 @@ def patch_alpha(image) -> PIL.Image.Image:
         im1=PIL.Image.new('RGBA', image.size, '#ffffff'),
         im2=image
     )
-
 
 class BulkResize:
     """Resize all the given image objects.
@@ -56,7 +55,7 @@ class BulkResize:
         """Return the fp of all the resized objects."""
 
         for obj in self.objects:
-            if isinstance(obj, image.AnimatedIcon):
+            if isinstance(obj, img.AnimatedIcon):
                 self.resize_save_animated(obj)
             else:
                 self.resize_save(obj)
