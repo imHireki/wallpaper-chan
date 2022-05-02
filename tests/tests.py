@@ -116,7 +116,7 @@ class TestImage(unittest.TestCase):
         images = utils.BulkResize([
             img.Icon(image=self.supported_image, size=size, format=format)
             for size, format in [webp_5050, png_1010]
-        ]).batch
+        ]).get_result()
 
         first_image = next(images)
 
