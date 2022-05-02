@@ -4,8 +4,8 @@ from io import BytesIO
 
 import PIL.Image, PIL.ImageSequence
 
-from exceptions import ImageSupportError
-import utils
+from . import exceptions
+from . import utils
 
 
 class Options:
@@ -99,7 +99,7 @@ class Image(Options, Info):
         self._image = image
 
         if not self.is_supported():
-            raise ImageSupportError(
+            raise exceptions.ImageSupportError(
                 f'Image {self.image.format, self.image.mode} '
                 f'not in {tuple(self.SUPPORTED_IMAGES)}'
                 )

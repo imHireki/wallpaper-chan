@@ -3,7 +3,7 @@ from typing import List
 
 import PIL.Image
 
-from image import AnimatedIcon
+from . import image
 
 
 def has_translucent_alpha(image) -> bool:
@@ -57,7 +57,7 @@ class BulkResize:
         """Return the fp of all the resized objects."""
 
         for obj in self.objects:
-            if isinstance(obj, AnimatedIcon):
+            if isinstance(obj, image.AnimatedIcon):
                 self.resize_save_animated(obj)
             else:
                 self.resize_save(obj)

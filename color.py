@@ -4,8 +4,8 @@ from binascii import hexlify
 
 import PIL.Image
 
-import exceptions
-import utils
+from . import exceptions
+from . import utils
 
 
 class ColorCluster:

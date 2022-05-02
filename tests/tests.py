@@ -4,9 +4,9 @@ import unittest
 
 import PIL.Image
 
-import utils
-from image import Icon, Image, AnimatedIcon
-from exceptions import ImageSupportError
+from .. import image as img
+from .. import utils
+from ..exceptions import ImageSupportError
 
 
 class DummyImage:
@@ -69,11 +69,11 @@ class TestImage(unittest.TestCase):
     def test_image_support(self):
         """Test the image support using the Icon options."""
 
-        supported = Icon(self.supported_image, (10, 10))
+        supported = img.Icon(self.supported_image, (10, 10))
         self.assertTrue(supported.is_supported())
 
         with self.assertRaises(ImageSupportError) as exc:
-            unsupported = Icon(self.unsupported_image, (10, 10))
+            unsupported = img.Icon(self.unsupported_image, (10, 10))
 
         self.assertIsInstance(exc.exception, ImageSupportError)
 
@@ -83,7 +83,7 @@ class TestImage(unittest.TestCase):
         new_size = (10, 10)
         new_format = 'WEBP'
 
-        image = Icon(self.supported_image, new_size, new_format)
+        image = img.Icon(self.supported_image, new_size, new_format)
 
         image.resize()
         image.save()
@@ -98,7 +98,7 @@ class TestImage(unittest.TestCase):
         new_size = (10, 10)
         new_format = 'WEBP'
 
-        image = AnimatedIcon(self.animated_image, new_size, new_format)
+        image = img.AnimatedIcon(self.animated_image, new_size, new_format)
 
         resized_frames = image.resize_frames()
         image.save_frames(resized_frames)
@@ -114,7 +114,7 @@ class TestImage(unittest.TestCase):
         png_1010 = ((10, 10), 'PNG')
 
         images = utils.BulkResize([
-            Icon(image=self.supported_image, size=size, format=format)
+            img.Icon(image=self.supported_image, size=size, format=format)
             for size, format in [webp_5050, png_1010]
         ]).batch
 
@@ -133,3 +133,4 @@ class TestImage(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+    # python3 -m unittest discover -s tests -t ..
