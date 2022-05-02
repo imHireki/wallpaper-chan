@@ -52,8 +52,7 @@ class BulkResize:
         resized_frames = obj.resize_frames()
         obj.save_frames(resized_frames)
 
-    @property
-    def batch(self):
+    def get_result(self):
         """Return the fp of all the resized objects."""
 
         for obj in self.objects:
