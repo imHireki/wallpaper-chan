@@ -112,5 +112,4 @@ class Colors:
     def dominant_color(self) -> str:
         """Return the most common color."""
 
-        return self.cc.hexlify_cluster([self.cc.sorted_colors()[0]])
-
+        return self.cc.hexlify_cluster([self.cc.sorted_colors()[0]])[0]
