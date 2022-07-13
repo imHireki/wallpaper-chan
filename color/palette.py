@@ -27,3 +27,12 @@ class DominantColor(IColorPalette):
 
     def get_palette_data_as_hex(self) -> str:
         return self._hexlify_rgb(self.get_palette_data())
+
+
+class RangeColorPalette(IColorPalette):
+    def get_palette_data(self, stop: int, start=0, step=1) -> list[tuple[int]]:
+        return self._color_cluster.sort_colors_by_incidences()[start:stop:step]
+
+    def get_palette_data_as_hex(self, stop: int, start=0, step=1) -> list[str]:
+        return [self._hexlify_rgb(color)
+                for color in self.get_palette_data(stop, start, step)]
