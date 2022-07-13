@@ -20,3 +20,10 @@ class IColorPalette(ABC):
     @abstractmethod
     def get_palette_data_as_hex(self): pass
 
+
+class DominantColor(IColorPalette):
+    def get_palette_data(self) -> tuple[int]:
+        return self._color_cluster.sort_colors_by_incidences()[0]
+
+    def get_palette_data_as_hex(self) -> str:
+        return self._hexlify_rgb(self.get_palette_data())
