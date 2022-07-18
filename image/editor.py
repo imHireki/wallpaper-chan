@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Union
+from typing import Union, Generator
 import tempfile
 
-import PIL.Image
+import PIL.Image, PIL.ImageSequence
 
 
 @dataclass
@@ -72,3 +72,28 @@ class StaticImageEditor(IImageEditor):
     def save_resized_image(self) -> None:
         with open(self._result.name, 'wb') as temporary_file:
             self._image.save(temporary_file, **self._editor_options.save_options)
+
+
+class AnimatedImageEditor(IImageEditor):
+    _frames: Generator[PIL.Image.Image, None, None]
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self._result = self._get_named_temporary_file()
+
+    @property
+    def result(self) -> tempfile.NamedTemporaryFile:
+        return self._result
+
+    def resize_image(self) -> None:
+        self._frames = (frame.resize(**self._editor_options.resize_options)
+                        for frame in PIL.ImageSequence.Iterator(self._image))
+        self._image = next(self._frames)
+
+    def save_resized_image(self) -> None:
+        with open(self._result.name, 'wb') as temporary_file:
+            self._image.save(
+                temporary_file, **self._editor_options.save_options,
+                loop=0, save_all=True, append_images=self._frames
+            )
