@@ -55,3 +55,20 @@ class IImageEditor(ABC):
     @abstractmethod
     def save_resized_image(self) -> None: pass
 
+
+class StaticImageEditor(IImageEditor):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+        self._result = self._get_named_temporary_file()
+
+    @property
+    def result(self) -> tempfile.NamedTemporaryFile:
+        return self._result
+
+    def resize_image(self) -> None:
+        self._image = self._image.resize(**self._editor_options.resize_options)
+
+    def save_resized_image(self) -> None:
+        with open(self._result.name, 'wb') as temporary_file:
+            self._image.save(temporary_file, **self._editor_options.save_options)
