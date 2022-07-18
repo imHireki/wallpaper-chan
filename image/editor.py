@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Union
-from io import BytesIO
+import tempfile
 
 import PIL.Image
 
@@ -29,4 +29,29 @@ class EditorOptions:
             "quality": self.quality,
             "format": self.format
         }
+
+
+class IImageEditor(ABC):
+    _editor_options: EditorOptions
+    _image: PIL.Image.Image
+    _result: tempfile.NamedTemporaryFile
+
+    def __init__(self, image: PIL.Image.Image, editor_options: EditorOptions) -> None:
+        self._image = image
+        self._editor_options = editor_options
+
+    def _get_named_temporary_file(self) -> tempfile.NamedTemporaryFile:
+        temporary_file = tempfile.NamedTemporaryFile(delete=False)
+        temporary_file.close()
+        return temporary_file
+
+    @property
+    @abstractmethod
+    def result(self) -> tempfile.NamedTemporaryFile: pass
+
+    @abstractmethod
+    def resize_image(self) -> None: pass
+
+    @abstractmethod
+    def save_resized_image(self) -> None: pass
 
