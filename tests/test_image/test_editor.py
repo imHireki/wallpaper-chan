@@ -22,11 +22,11 @@ def test_static_image_editor(mocker, editor_options_mock):
     image_save_mock = mocker.patch.object(static_image_editor._image, 'save')
     static_image_editor.save_resized_image()
 
+    os.remove(static_image_editor.result.name)
+
     assert image_resize_mock.call_args.kwargs == editor_options_mock.resize_options
     assert image_save_mock.call_args.kwargs == editor_options_mock.save_options
 
-    # temporary file cleanup
-    os.remove(static_image_editor.result.name)
 
 def test_animated_image_editor(mocker, editor_options_mock):
     image_resize_mock = mocker.Mock()
