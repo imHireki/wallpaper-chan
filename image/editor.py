@@ -1,9 +1,15 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Union, Generator
+from dataclasses import dataclass
 import tempfile
 
 import PIL.Image, PIL.ImageSequence
+
+
+def get_named_temporary_file() -> tempfile.NamedTemporaryFile:
+    temporary_file = tempfile.NamedTemporaryFile(delete=False)
+    temporary_file.close()
+    return temporary_file
 
 
 @dataclass
@@ -42,18 +48,12 @@ class IImageEditor(ABC):
     @abstractmethod
     def save_resized_image(self) -> None: pass
 
-    def _get_named_temporary_file(self) -> tempfile.NamedTemporaryFile:
-        temporary_file = tempfile.NamedTemporaryFile(delete=False)
-        temporary_file.close()
-        return temporary_file
-
-
 
 class StaticImageEditor(IImageEditor):
     def __init__(self, image: PIL.Image.Image, editor_options: EditorOptions) -> None:
         self._image: PIL.Image.Image = image
         self._editor_options: EditorOptions = editor_options
-        self._result: tempfile.NamedTemporaryFile = self._get_named_temporary_file()
+        self._result: tempfile.NamedTemporaryFile = get_named_temporary_file()
 
     @property
     def result(self) -> tempfile.NamedTemporaryFile:
@@ -73,7 +73,7 @@ class AnimatedImageEditor(IImageEditor):
     def __init__(self, image: PIL.Image.Image, editor_options: EditorOptions) -> None:
         self._image: PIL.Image.Image = image
         self._editor_options: EditorOptions = editor_options
-        self._result: tempfile.NamedTemporaryFile = self._get_named_temporary_file()
+        self._result: tempfile.NamedTemporaryFile = get_named_temporary_file()
 
     @property
     def result(self) -> tempfile.NamedTemporaryFile:
