@@ -32,19 +32,6 @@ class EditorOptions:
 
 
 class IImageEditor(ABC):
-    _editor_options: EditorOptions
-    _image: PIL.Image.Image
-    _result: tempfile.NamedTemporaryFile
-
-    def __init__(self, image: PIL.Image.Image, editor_options: EditorOptions) -> None:
-        self._image = image
-        self._editor_options = editor_options
-
-    def _get_named_temporary_file(self) -> tempfile.NamedTemporaryFile:
-        temporary_file = tempfile.NamedTemporaryFile(delete=False)
-        temporary_file.close()
-        return temporary_file
-
     @property
     @abstractmethod
     def result(self) -> tempfile.NamedTemporaryFile: pass
@@ -55,12 +42,18 @@ class IImageEditor(ABC):
     @abstractmethod
     def save_resized_image(self) -> None: pass
 
+    def _get_named_temporary_file(self) -> tempfile.NamedTemporaryFile:
+        temporary_file = tempfile.NamedTemporaryFile(delete=False)
+        temporary_file.close()
+        return temporary_file
+
+
 
 class StaticImageEditor(IImageEditor):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
-        self._result = self._get_named_temporary_file()
+    def __init__(self, image: PIL.Image.Image, editor_options: EditorOptions) -> None:
+        self._image: PIL.Image.Image = image
+        self._editor_options: EditorOptions = editor_options
+        self._result: tempfile.NamedTemporaryFile = self._get_named_temporary_file()
 
     @property
     def result(self) -> tempfile.NamedTemporaryFile:
@@ -77,10 +70,10 @@ class StaticImageEditor(IImageEditor):
 class AnimatedImageEditor(IImageEditor):
     _frames: Generator[PIL.Image.Image, None, None]
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
-        self._result = self._get_named_temporary_file()
+    def __init__(self, image: PIL.Image.Image, editor_options: EditorOptions) -> None:
+        self._image: PIL.Image.Image = image
+        self._editor_options: EditorOptions = editor_options
+        self._result: tempfile.NamedTemporaryFile = self._get_named_temporary_file()
 
     @property
     def result(self) -> tempfile.NamedTemporaryFile:
