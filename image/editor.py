@@ -90,3 +90,27 @@ class AnimatedImageEditor(IImageEditor):
                 temporary_file, **self._editor_options.save_options,
                 loop=0, save_all=True, append_images=self._frames
             )
+
+
+class BulkImageEditor(IImageEditor):
+    _image_editor_generator: Generator[IImageEditor, None, None]
+    _current_image_editor: IImageEditor
+
+    def __init__(self, image_editor_generator: Generator[IImageEditor, None, None]) -> None:
+        self._image_editor_generator = image_editor_generator
+
+    def __next__(self) -> tempfile.NamedTemporaryFile:
+        self._current_image_editor = next(self._image_editor_generator)
+        self.resize_image()
+        self.save_resized_image()
+        return self.result
+
+    @property
+    def result(self) -> tempfile.NamedTemporaryFile:
+        return self._current_image_editor.result
+
+    def resize_image(self) -> None:
+        self._current_image_editor.resize_image()
+
+    def save_resized_image(self) -> None:
+        self._current_image_editor.save_resized_image()
