@@ -12,31 +12,6 @@ def get_named_temporary_file() -> tempfile.NamedTemporaryFile:
     return temporary_file
 
 
-@dataclass
-class EditorOptions:
-    size: tuple[int, int]
-    resample: int
-    reducing_gap: int
-
-    quality: int
-    format: str
-
-    @property
-    def resize_options(self) -> dict[str, Union[tuple, int, int]]:
-        return {
-            "size": self.size,
-            "resample": self.resample,
-            "reducing_gap": self.reducing_gap
-        }
-
-    @property
-    def save_options(self) -> dict[str, Union[int, str]]:
-        return {
-            "quality": self.quality,
-            "format": self.format
-        }
-
-
 class IImageEditor(ABC):
     @property
     @abstractmethod
@@ -50,9 +25,9 @@ class IImageEditor(ABC):
 
 
 class StaticImageEditor(IImageEditor):
-    def __init__(self, image: PIL.Image.Image, editor_options: EditorOptions) -> None:
+    def __init__(self, image: PIL.Image.Image, editor_options) -> None:
         self._image: PIL.Image.Image = image
-        self._editor_options: EditorOptions = editor_options
+        self._editor_options = editor_options
         self._result: tempfile.NamedTemporaryFile = get_named_temporary_file()
 
     @property
@@ -70,9 +45,9 @@ class StaticImageEditor(IImageEditor):
 class AnimatedImageEditor(IImageEditor):
     _frames: Generator[PIL.Image.Image, None, None]
 
-    def __init__(self, image: PIL.Image.Image, editor_options: EditorOptions) -> None:
+    def __init__(self, image: PIL.Image.Image, editor_options) -> None:
         self._image: PIL.Image.Image = image
-        self._editor_options: EditorOptions = editor_options
+        self._editor_options = editor_options
         self._result: tempfile.NamedTemporaryFile = get_named_temporary_file()
 
     @property
