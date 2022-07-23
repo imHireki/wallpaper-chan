@@ -21,7 +21,7 @@ def test_static_image_editor(mocker):
     assert image_resize_mock.call_args.kwargs == resize_options
     assert image_save_mock.call_args.kwargs == save_options
 
-def test_animated_image_editor(mocker, editor_options_mock):
+def test_animated_image_editor(mocker):
     image_resize_mock = mocker.Mock()
 
     image_sequence_iterator_mock = mocker.patch(
@@ -29,16 +29,19 @@ def test_animated_image_editor(mocker, editor_options_mock):
         lambda _: (frame for frame in [mocker.Mock(resize=image_resize_mock)])
     )
 
-    animated_image_editor = editor.AnimatedImageEditor(mocker.Mock(), editor_options_mock)
-    animated_image_editor.resize_image()
+    resize_options = {"size": (512, 512), "resample": 1, "reducing_gap": 2}
+    save_options = {"quality": 75, "format": "webp"}
+
+    animated_image_editor = editor.AnimatedImageEditor(mocker.Mock())
+    animated_image_editor.resize_image(**resize_options)
 
     image_save_mock = mocker.patch.object(animated_image_editor._image, 'save')
-    animated_image_editor.save_resized_image()
+    animated_image_editor.save_resized_image(**save_options)
 
     os.remove(animated_image_editor.result.name)
 
-    assert image_resize_mock.call_args.kwargs == editor_options_mock.resize_options
-    assert set(editor_options_mock.save_options).issubset(image_save_mock.call_args.kwargs)
+    assert image_resize_mock.call_args.kwargs == resize_options
+    assert set(save_options).issubset(image_save_mock.call_args.kwargs)
 
 
 def test_bulk_image_editor(mocker):
