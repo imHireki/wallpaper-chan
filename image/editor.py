@@ -25,21 +25,20 @@ class IImageEditor(ABC):
 
 
 class StaticImageEditor(IImageEditor):
-    def __init__(self, image: PIL.Image.Image, editor_options) -> None:
+    def __init__(self, image: PIL.Image.Image) -> None:
         self._image: PIL.Image.Image = image
-        self._editor_options = editor_options
         self._result: tempfile.NamedTemporaryFile = get_named_temporary_file()
 
     @property
     def result(self) -> tempfile.NamedTemporaryFile:
         return self._result
 
-    def resize_image(self) -> None:
-        self._image = self._image.resize(**self._editor_options.resize_options)
+    def resize_image(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
+        self._image = self._image.resize(size=size, resample=resample, reducing_gap=reducing_gap)
 
-    def save_resized_image(self) -> None:
+    def save_resized_image(self, quality: int, format: str) -> None:
         with open(self._result.name, 'wb') as temporary_file:
-            self._image.save(temporary_file, **self._editor_options.save_options)
+            self._image.save(temporary_file, quality=quality, format=format)
 
 
 class AnimatedImageEditor(IImageEditor):
