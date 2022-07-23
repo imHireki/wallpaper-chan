@@ -3,21 +3,23 @@ import os
 from image import editor
 
 
-def test_static_image_editor(mocker, editor_options_mock):
+def test_static_image_editor(mocker):
     image_resize_mock = mocker.Mock()
     image = mocker.Mock(resize=image_resize_mock)
 
-    static_image_editor = editor.StaticImageEditor(image, editor_options_mock)
-    static_image_editor.resize_image()
+    resize_options = {"size": (512, 512), "resample": 1, "reducing_gap": 2}
+    save_options = {"quality": 75, "format": "webp"}
+
+    static_image_editor = editor.StaticImageEditor(image)
+    static_image_editor.resize_image(**resize_options)
 
     image_save_mock = mocker.patch.object(static_image_editor._image, 'save')
-    static_image_editor.save_resized_image()
+    static_image_editor.save_resized_image(**save_options)
 
     os.remove(static_image_editor.result.name)
 
-    assert image_resize_mock.call_args.kwargs == editor_options_mock.resize_options
-    assert image_save_mock.call_args.kwargs == editor_options_mock.save_options
-
+    assert image_resize_mock.call_args.kwargs == resize_options
+    assert image_save_mock.call_args.kwargs == save_options
 
 def test_animated_image_editor(mocker, editor_options_mock):
     image_resize_mock = mocker.Mock()
