@@ -43,7 +43,6 @@ def test_animated_image_editor(mocker):
     assert image_resize_mock.call_args.kwargs == resize_options
     assert set(save_options).issubset(image_save_mock.call_args.kwargs)
 
-
 def test_bulk_image_editor(mocker):
     resize_image_mock = mocker.Mock()
     save_resized_image_mock = mocker.Mock()
@@ -53,11 +52,18 @@ def test_bulk_image_editor(mocker):
                                     save_resized_image=save_resized_image_mock,
                                     result=result_mock)
 
-    bulk_image_editor = editor.BulkImageEditor((editor for editor in [image_editor_mock]))
+    resize_options = {"size": (512, 512), "resample": 1, "reducing_gap": 2}
+    save_options = {"quality": 75, "format": "webp"}
+
+    bulk_image_editor = editor.BulkImageEditor(
+        (editor for editor in [image_editor_mock]),
+        save_options=save_options,
+        resize_options=resize_options
+    )
 
     image_editor_result = next(bulk_image_editor)
 
-    assert resize_image_mock.called
-    assert save_resized_image_mock.called
+    assert resize_image_mock.call_args.kwargs == resize_options
+    assert save_resized_image_mock.call_args.kwargs == save_options
     assert image_editor_result is result_mock
 
