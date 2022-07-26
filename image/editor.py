@@ -18,6 +18,9 @@ class IImageEditor(ABC):
     def result(self) -> tempfile.NamedTemporaryFile: pass
 
     @abstractmethod
+    def convert_mode(self) -> None: pass
+
+    @abstractmethod
     def resize_image(self) -> None: pass
 
     @abstractmethod
