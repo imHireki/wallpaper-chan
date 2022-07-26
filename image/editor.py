@@ -36,6 +36,9 @@ class StaticImageEditor(IImageEditor):
     def result(self) -> tempfile.NamedTemporaryFile:
         return self._result
 
+    def convert_mode(self, mode: str) -> None:
+        self._image = self._image.convert(mode=mode)
+
     def resize_image(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
         self._image = self._image.resize(size=size, resample=resample, reducing_gap=reducing_gap)
 
