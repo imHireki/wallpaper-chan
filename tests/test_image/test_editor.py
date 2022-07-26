@@ -5,10 +5,12 @@ from image import editor
 
 def test_static_image_editor(mocker, editor_options):
     image_resize_mock = mocker.Mock()
-    image = mocker.Mock(resize=image_resize_mock)
+    static_image_editor = editor.StaticImageEditor(mocker.Mock(resize=image_resize_mock))
 
-    static_image_editor = editor.StaticImageEditor(image)
     static_image_editor.resize_image(**editor_options["resize_options"])
+
+    image_convert_mock = mocker.patch.object(static_image_editor._image, 'convert')
+    static_image_editor.convert_mode(**editor_options["convert_mode_options"])
 
     image_save_mock = mocker.patch.object(static_image_editor._image, 'save')
     static_image_editor.save_resized_image(**editor_options["save_options"])
@@ -16,6 +18,7 @@ def test_static_image_editor(mocker, editor_options):
     os.remove(static_image_editor.result.name)
 
     assert image_resize_mock.call_args.kwargs == editor_options["resize_options"]
+    assert image_convert_mock.call_args.kwargs == editor_options["convert_mode_options"]
     assert image_save_mock.call_args.kwargs == editor_options["save_options"]
 
 def test_animated_image_editor(mocker, editor_options):
