@@ -7,7 +7,7 @@ def test_static_image_editor(mocker, editor_options):
     image_resize_mock = mocker.Mock()
     static_image_editor = editor.StaticImageEditor(mocker.Mock(resize=image_resize_mock))
 
-    static_image_editor.resize_image(**editor_options["resize_options"])
+    static_image_editor.resize(**editor_options["resize_options"])
 
     image_convert_mock = mocker.patch.object(static_image_editor._image, 'convert')
     static_image_editor.convert_mode(**editor_options["convert_mode_options"])

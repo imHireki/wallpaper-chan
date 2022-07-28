@@ -39,7 +39,7 @@ class StaticImageEditor(IImageEditor):
     def convert_mode(self, mode: str) -> None:
         self._image = self._image.convert(mode=mode)
 
-    def resize_image(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
+    def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
         self._image = self._image.resize(size=size, resample=resample, reducing_gap=reducing_gap)
 
     def save_resized_image(self, quality: int, format: str) -> None:
