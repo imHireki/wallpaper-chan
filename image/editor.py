@@ -62,7 +62,7 @@ class AnimatedImageEditor(IImageEditor):
         self._frames = (frame.convert(mode=mode) for frame in PIL.ImageSequence.Iterator(self._image))
         self._image = next(self._frames)
 
-    def resize_image(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
+    def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
         self._frames = (frame.resize(size=size, resample=resample, reducing_gap=reducing_gap)
                         for frame in PIL.ImageSequence.Iterator(self._image))
         self._image = next(self._frames)
