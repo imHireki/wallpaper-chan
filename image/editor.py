@@ -24,7 +24,7 @@ class IImageEditor(ABC):
     def resize(self) -> None: pass
 
     @abstractmethod
-    def save_resized_image(self) -> None: pass
+    def save(self) -> None: pass
 
 
 class StaticImageEditor(IImageEditor):
