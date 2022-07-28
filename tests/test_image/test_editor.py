@@ -36,7 +36,7 @@ def test_animated_image_editor(mocker, editor_options):
     animated_image_editor.convert_mode(**editor_options["convert_mode_options"])
 
     image_save_mock = mocker.patch.object(animated_image_editor._image, 'save')
-    animated_image_editor.save_resized_image(**editor_options["save_options"])
+    animated_image_editor.save(**editor_options["save_options"])
 
     os.remove(animated_image_editor.result.name)
 

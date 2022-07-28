@@ -67,7 +67,7 @@ class AnimatedImageEditor(IImageEditor):
                         for frame in PIL.ImageSequence.Iterator(self._image))
         self._image = next(self._frames)
 
-    def save_resized_image(self, quality: int, format: str) -> None:
+    def save(self, quality: int, format: str) -> None:
         with open(self._result.name, 'wb') as temporary_file:
             self._image.save(
                 temporary_file, quality=quality, format=format,
