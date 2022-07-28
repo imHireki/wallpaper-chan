@@ -13,7 +13,7 @@ def test_static_image_editor(mocker, editor_options):
     static_image_editor.convert_mode(**editor_options["convert_mode_options"])
 
     image_save_mock = mocker.patch.object(static_image_editor._image, 'save')
-    static_image_editor.save_resized_image(**editor_options["save_options"])
+    static_image_editor.save(**editor_options["save_options"])
 
     os.remove(static_image_editor.result.name)
 
