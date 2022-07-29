@@ -21,7 +21,7 @@ class IImageEditor(ABC):
     def convert_mode(self) -> None: pass
 
     @abstractmethod
-    def resize_image(self) -> None: pass
+    def resize(self) -> None: pass
 
     @abstractmethod
     def save_resized_image(self) -> None: pass
