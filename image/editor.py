@@ -58,6 +58,10 @@ class AnimatedImageEditor(IImageEditor):
     def result(self) -> tempfile.NamedTemporaryFile:
         return self._result
 
+    def convert_mode(self, mode: str) -> None:
+        self._frames = (frame.convert(mode=mode) for frame in PIL.ImageSequence.Iterator(self._image))
+        self._image = next(self._frames)
+
     def resize_image(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
         self._frames = (frame.resize(size=size, resample=resample, reducing_gap=reducing_gap)
                         for frame in PIL.ImageSequence.Iterator(self._image))
