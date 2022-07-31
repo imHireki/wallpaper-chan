@@ -67,10 +67,10 @@ class AnimatedImageEditor(IImageEditor):
                         for frame in PIL.ImageSequence.Iterator(self._image))
         self._image = next(self._frames)
 
-    def save(self, quality: int, format: str) -> None:
+    def save(self, format: str, **extra_options: dict[str, Any]) -> None:
         with open(self._result.name, 'wb') as temporary_file:
             self._image.save(
-                temporary_file, quality=quality, format=format,
+                temporary_file, format=format, **extra_options,
                 loop=0, save_all=True, append_images=self._frames
             )
 
