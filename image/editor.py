@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Union, Generator
-from dataclasses import dataclass
 import tempfile
 
-import PIL.Image, PIL.ImageSequence
+import PIL.ImageSequence
+import PIL.Image
 
 
 def get_named_temporary_file() -> tempfile.NamedTemporaryFile:
