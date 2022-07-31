@@ -42,9 +42,9 @@ class StaticImageEditor(IImageEditor):
     def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
         self._image = self._image.resize(size=size, resample=resample, reducing_gap=reducing_gap)
 
-    def save(self, quality: int, format: str) -> None:
+    def save(self, format: str, **extra_options: dict[str, Any]) -> None:
         with open(self._result.name, 'wb') as temporary_file:
-            self._image.save(temporary_file, quality=quality, format=format)
+            self._image.save(temporary_file, format=format, **extra_options)
 
 
 class AnimatedImageEditor(IImageEditor):
