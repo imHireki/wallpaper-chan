@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union, Generator
+from typing import Union, Generator, Any
 import tempfile
 
 import PIL.ImageSequence
@@ -18,13 +18,13 @@ class IImageEditor(ABC):
     def result(self) -> tempfile.NamedTemporaryFile: pass
 
     @abstractmethod
-    def convert_mode(self) -> None: pass
+    def convert_mode(self, mode: str) -> None: pass
 
     @abstractmethod
-    def resize(self) -> None: pass
+    def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None: pass
 
     @abstractmethod
-    def save(self) -> None: pass
+    def save(self, format: str, **extra_options: dict[str, Any]) -> None: pass
 
 
 class StaticImageEditor(IImageEditor):
