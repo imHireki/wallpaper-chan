@@ -79,10 +79,10 @@ class BulkResizeSaveEditor(IImageEditor):
     _current_image_editor: IImageEditor
 
     def __init__(self, image_editor_generator: Generator[IImageEditor, None, None],
-                 save_options: dict, resize_options: dict) -> None:
+                 save_options: dict[str, Any], resize_options: dict[str, Any]) -> None:
         self._image_editor_generator = image_editor_generator
-        self._save_options: dict = save_options
-        self._resize_options: dict = resize_options
+        self._save_options: dict[str, Any] = save_options
+        self._resize_options: dict[str, Any] = resize_options
 
     def __next__(self) -> tempfile.NamedTemporaryFile:
         self._current_image_editor = next(self._image_editor_generator)
@@ -99,5 +99,5 @@ class BulkResizeSaveEditor(IImageEditor):
     def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
         self._current_image_editor.resize(size=size, resample=resample, reducing_gap=reducing_gap)
 
-    def save(self, quality: int, format: str) -> None:
-        self._current_image_editor.save(quality=quality, format=format)
+    def save(self, format: str, **extra_options) -> None:
+        self._current_image_editor.save(format=format, **extra_options)
