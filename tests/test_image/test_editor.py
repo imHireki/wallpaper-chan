@@ -4,22 +4,20 @@ from image import editor
 
 
 def test_static_image_editor(mocker, editor_options):
-    image_resize_mock = mocker.Mock()
-    static_image_editor = editor.StaticImageEditor(mocker.Mock(resize=image_resize_mock))
+    image_mock = mocker.Mock()
+    image_mock.resize = mocker.Mock(return_value=image_mock)
+    image_mock.convert = mocker.Mock(return_value=image_mock)
+    static_image_editor = editor.StaticImageEditor(image_mock)
 
     static_image_editor.resize(**editor_options["resize_options"])
-
-    image_convert_mock = mocker.patch.object(static_image_editor._image, 'convert')
     static_image_editor.convert_mode(**editor_options["convert_mode_options"])
-
-    image_save_mock = mocker.patch.object(static_image_editor._image, 'save')
     static_image_editor.save(**editor_options["save_options"])
 
     os.remove(static_image_editor.result.name)
 
-    assert image_resize_mock.call_args.kwargs == editor_options["resize_options"]
-    assert image_convert_mock.call_args.kwargs == editor_options["convert_mode_options"]
-    assert image_save_mock.call_args.kwargs == editor_options["save_options"]
+    assert image_mock.resize.call_args.kwargs == editor_options["resize_options"]
+    assert image_mock.convert.call_args.kwargs == editor_options["convert_mode_options"]
+    assert image_mock.save.call_args.kwargs == editor_options["save_options"]
 
 def test_animated_image_editor(mocker, editor_options):
     image_mock = mocker.Mock()
