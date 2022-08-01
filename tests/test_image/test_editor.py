@@ -45,13 +45,7 @@ def test_animated_image_editor(mocker, editor_options):
     assert set(editor_options["save_options"]).issubset(image_save_mock.call_args.kwargs)
 
 def test_bulk_resize_save_editor(mocker, editor_options):
-    resize_mock = mocker.Mock()
-    save_image_mock = mocker.Mock()
-    result_mock = mocker.Mock()
-
-    image_editor_mock = mocker.Mock(resize=resize_mock,
-                                    save=save_image_mock,
-                                    result=result_mock)
+    image_editor_mock = mocker.Mock()
 
     bulk_resize_save_editor = editor.BulkResizeSaveEditor(
         (editor for editor in [image_editor_mock]),
@@ -59,9 +53,6 @@ def test_bulk_resize_save_editor(mocker, editor_options):
         resize_options=editor_options["resize_options"]
     )
 
-    image_editor_result = next(bulk_resize_save_editor)
-
-    assert resize_mock.call_args.kwargs == editor_options["resize_options"]
-    assert save_image_mock.call_args.kwargs == editor_options["save_options"]
-    assert image_editor_result is result_mock
-
+    assert next(bulk_resize_save_editor) is image_editor_mock.result
+    assert image_editor_mock.resize.call_args.kwargs == editor_options["resize_options"]
+    assert image_editor_mock.save.call_args.kwargs == editor_options["save_options"]
