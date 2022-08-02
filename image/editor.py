@@ -29,7 +29,9 @@ class IImageEditor(ABC):
 
 class StaticImageEditor(IImageEditor):
     def __init__(self, image: PIL.Image.Image) -> None:
-        self._image: PIL.Image.Image = image
+        self._original_image: PIL.Image.Image = image
+
+        self._image_to_save: PIL.Image.Image = self._original_image
         self._result: tempfile.NamedTemporaryFile = get_named_temporary_file()
 
     @property
@@ -37,14 +39,15 @@ class StaticImageEditor(IImageEditor):
         return self._result
 
     def convert_mode(self, mode: str) -> None:
-        self._image = self._image.convert(mode=mode)
+        self._image_to_save = self._original_image.convert(mode=mode)
 
     def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
-        self._image = self._image.resize(size=size, resample=resample, reducing_gap=reducing_gap)
+        self._image_to_save = self._original_image.resize(size=size, resample=resample,
+                                                          reducing_gap=reducing_gap)
 
     def save(self, format: str, **extra_options: dict[str, Any]) -> None:
         with open(self._result.name, 'wb') as temporary_file:
-            self._image.save(temporary_file, format=format, **extra_options)
+            self._image_to_save.save(temporary_file, format=format, **extra_options)
 
 
 class AnimatedImageEditor(IImageEditor):

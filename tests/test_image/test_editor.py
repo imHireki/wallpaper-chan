@@ -4,9 +4,8 @@ from image import editor
 
 
 def test_static_image_editor(mocker, editor_options):
-    image_mock = mocker.Mock()
-    image_mock.resize = mocker.Mock(return_value=image_mock)
-    image_mock.convert = mocker.Mock(return_value=image_mock)
+    image_to_save_mock = mocker.Mock()
+    image_mock = mocker.Mock(convert=mocker.Mock(return_value=image_to_save_mock))
     static_image_editor = editor.StaticImageEditor(image_mock)
 
     static_image_editor.resize(**editor_options["resize_options"])
@@ -17,7 +16,7 @@ def test_static_image_editor(mocker, editor_options):
 
     assert image_mock.resize.call_args.kwargs == editor_options["resize_options"]
     assert image_mock.convert.call_args.kwargs == editor_options["convert_mode_options"]
-    assert image_mock.save.call_args.kwargs == editor_options["save_options"]
+    assert image_to_save_mock.save.call_args.kwargs == editor_options["save_options"]
 
 def test_animated_image_editor(mocker, editor_options):
     image_mock = mocker.Mock()
