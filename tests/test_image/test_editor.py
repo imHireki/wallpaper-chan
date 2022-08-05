@@ -23,7 +23,7 @@ def test_animated_image_editor(mocker, editor_options):
     image_mock.convert = mocker.Mock(return_value=image_mock)
     mocker.patch('image.editor.AnimatedImageEditor._get_frames',
                  lambda _: (frame for frame in [image_mock]))
-    mocker.patch('image.editor.AnimatedImageEditor._get_actual_mode', lambda _: 'RGB')
+    mocker.patch('image.editor.AnimatedImageEditor._find_actual_mode', lambda _: 'RGB')
 
     animated_image_editor = editor.AnimatedImageEditor(image_mock)
 
