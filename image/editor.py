@@ -69,20 +69,24 @@ class AnimatedImageEditor(IImageEditor):
         self._load_frames()
 
     @property
+    def actual_mode(self) -> str:
+        return self._actual_mode
+
+    @property
     def result(self) -> tempfile.NamedTemporaryFile:
         return self._result
 
     def convert_mode(self, mode: str) -> None:
         self._frames = (frame.convert(mode=mode)
-                        if frame.mode != self._actual_mode else
+                        if frame.mode != self.actual_mode else
                         frame.copy()
                         for frame in self._get_frames())
 
     def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
         resize_options = {"size": size, "resample": resample, "reducing_gap": reducing_gap}
 
-        self._frames = (frame.convert(self._actual_mode).resize(**resize_options)
-                        if frame.mode != self._actual_mode else
+        self._frames = (frame.convert(self.actual_mode).resize(**resize_options)
+                        if frame.mode != self.actual_mode else
                         frame.resize(**resize_options)
                         for frame in self._get_frames())
 
@@ -96,7 +100,7 @@ class AnimatedImageEditor(IImageEditor):
     def _load_frames(self) -> None:
         self.convert_mode(self._actual_mode)
 
-    def _get_actual_mode(self) -> str:
+    def _find_actual_mode(self) -> str:
         if self._original_image.mode == 'RGBA':
             return 'RGBA' if self._original_image.getextrema()[-1][0] < 255 else 'RGB'
         return 'RGB' if not 'transparency' in self._original_image.info else 'RGBA'
