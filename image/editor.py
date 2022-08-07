@@ -39,6 +39,10 @@ class StaticImageEditor(IImageEditor):
         self._result: tempfile.NamedTemporaryFile = get_named_temporary_file()
 
     @property
+    def actual_mode(self) -> str:
+        return self._original_image.mode
+
+    @property
     def result(self) -> tempfile.NamedTemporaryFile:
         return self._result
 
