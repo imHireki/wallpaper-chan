@@ -65,7 +65,7 @@ class AnimatedImageEditor(IImageEditor):
         self._original_image: PIL.Image.Image = image
 
         self._result: tempfile.NamedTemporaryFile = get_named_temporary_file()
-        self._actual_mode: str = self._get_actual_mode()
+        self._actual_mode: str = self._find_actual_mode()
         self._load_frames()
 
     @property
@@ -124,6 +124,10 @@ class BulkResizeSaveEditor(IImageEditor):
         self.resize(**self._resize_options)
         self.save(**self._save_options)
         return self.result
+
+    @property
+    def actual_mode(self) -> str:
+        return self._current_image_editor.actual_mode
 
     @property
     def result(self) -> tempfile.NamedTemporaryFile:
