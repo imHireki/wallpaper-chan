@@ -15,6 +15,10 @@ def get_named_temporary_file() -> tempfile.NamedTemporaryFile:
 class IImageEditor(ABC):
     @property
     @abstractmethod
+    def actual_mode(self) -> str: pass
+
+    @property
+    @abstractmethod
     def result(self) -> tempfile.NamedTemporaryFile: pass
 
     @abstractmethod
