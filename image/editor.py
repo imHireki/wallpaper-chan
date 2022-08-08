@@ -63,14 +63,11 @@ class StaticImageEditor(IImageEditor):
 
 
 class AnimatedImageEditor(IImageEditor):
-    _frames: Generator[PIL.Image.Image, None, None]
-
     def __init__(self, image: PIL.Image.Image) -> None:
         self._original_image: PIL.Image.Image = image
-
+        self._edited_frames: Generator[PIL.Image.Image, None, None] = None
         self._result: tempfile.NamedTemporaryFile = get_named_temporary_file()
         self._actual_mode: str = self._find_actual_mode()
-        self._load_frames()
 
     @property
     def actual_mode(self) -> str:
@@ -81,28 +78,32 @@ class AnimatedImageEditor(IImageEditor):
         return self._result
 
     def convert_mode(self, mode: str) -> None:
-        self._frames = (frame.convert(mode=mode)
-                        if frame.mode != self.actual_mode else
-                        frame.copy()
-                        for frame in self._get_frames())
+        self._edited_frames = (frame.convert(mode=mode)
+                               if frame.mode != self.actual_mode else
+                               frame.copy()
+                               for frame in self._get_frames())
 
     def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
         resize_options = {"size": size, "resample": resample, "reducing_gap": reducing_gap}
 
-        self._frames = (frame.convert(self.actual_mode).resize(**resize_options)
-                        if frame.mode != self.actual_mode else
-                        frame.resize(**resize_options)
-                        for frame in self._get_frames())
+        self._edited_frames = (frame.convert(self.actual_mode).resize(**resize_options)
+                               if frame.mode != self.actual_mode else
+                               frame.resize(**resize_options)
+                               for frame in self._get_frames())
 
     def save(self, format: str, **extra_options: dict[str, Any]) -> None:
-        with open(self._result.name, 'wb') as temporary_file:
-            next(self._frames).save(
-                temporary_file, format=format, **extra_options,
-                save_all=True, append_images=list(self._frames)
-            )
+        if not self._edited_frames:
+            self.convert_mode(self.actual_mode)
 
-    def _load_frames(self) -> None:
-        self.convert_mode(self._actual_mode)
+        first_frame = next(self._edited_frames)
+
+        if 'save_all' in extra_options:
+            extra_options.update(append_images=list(self._edited_frames))
+
+        self._edited_frames = None
+
+        with open(self._result.name, 'wb') as temporary_file:
+            first_frame.save(temporary_file, format=format, **extra_options)
 
     def _find_actual_mode(self) -> str:
         if self._original_image.mode == 'RGBA':
