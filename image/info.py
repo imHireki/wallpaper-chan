@@ -29,3 +29,13 @@ class IStaticImageInfo(ABC):
 
     def get_image_for_color_clustering(self) -> PIL.Image.Image:
         return self._image
+
+
+class StaticJpegRgbInfo(IStaticImageInfo):
+    @classmethod
+    @property
+    def name(cls) -> str: return 'JPEG_RGB'
+
+    def is_standardized(self) -> bool: return True
+
+    def standardize(self) -> None: pass
