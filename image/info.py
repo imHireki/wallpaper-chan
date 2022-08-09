@@ -6,6 +6,13 @@ import PIL.Image
 from . import editor
 
 
+save_options = {
+    "GIF": {"format": "GIF", "optimize": True, "disposal": 2, "background": (0,0,0,0), "save_all": True},
+    "JPEG": {"format": "JPEG", "optimize": True, "quality": 75},
+    "PNG": {"format": "PNG", "optimize": True},
+}
+
+
 class IStaticImageInfo(ABC):
     _image_editor: editor.StaticImageEditor
 
@@ -39,3 +46,17 @@ class StaticJpegRgbInfo(IStaticImageInfo):
     def is_standardized(self) -> bool: return True
 
     def standardize(self) -> None: pass
+
+
+class StaticWebpRgbInfo(IStaticImageInfo):
+    @classmethod
+    @property
+    def name(cls) -> str: return 'WEBP_RGB'
+
+    def is_standardized(self) -> bool: return False
+
+    def standardize(self) -> tempfile.NamedTemporaryFile:
+        self.get_image_editor()
+
+        self._image_editor.save(**save_options['JPEG'])
+        return self._image_editor.result
