@@ -17,8 +17,8 @@ class TestIStaticImageInfo:
 
 
 class TestStaticJpegRgbInfo:
-    def test_name(self, mocker):
-        assert info.StaticJpegRgbInfo(mocker.Mock()).name == 'JPEG_RGB'
+    def test_name(self):
+        assert info.StaticJpegRgbInfo.name == 'JPEG_RGB'
 
     def test_is_standardized(self, mocker):
         assert info.StaticJpegRgbInfo(mocker.Mock()).is_standardized() is True
@@ -28,8 +28,8 @@ class TestStaticJpegRgbInfo:
 
 
 class TestStaticWebpRgbInfo:
-    def test_name(self, mocker):
-        assert info.StaticWebpRgbInfo(mocker.Mock()).name == 'WEBP_RGB'
+    def test_name(self):
+        assert info.StaticWebpRgbInfo.name == 'WEBP_RGB'
 
     def test_is_standardized(self, mocker):
         assert info.StaticWebpRgbInfo(mocker.Mock()).is_standardized() is False
@@ -45,8 +45,8 @@ class TestStaticWebpRgbInfo:
 
 
 class TestStaticWebpRgbaInfo:
-    def test_name(self, mocker):
-        assert info.StaticWebpRgbaInfo(mocker.Mock()).name == 'WEBP_RGBA'
+    def test_name(self):
+        assert info.StaticWebpRgbaInfo.name == 'WEBP_RGBA'
 
     def test_is_standardized(self, mocker):
         assert info.StaticWebpRgbaInfo(mocker.Mock()).is_standardized() is False
