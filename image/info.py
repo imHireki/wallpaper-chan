@@ -81,3 +81,17 @@ class StaticWebpRgbaInfo(IStaticImageInfo):
             self._image_editor.save(**save_options['PNG'])
 
         return self._image_editor.result
+
+
+class StaticPngRgbInfo(IStaticImageInfo):
+    @classmethod
+    @property
+    def name(cls) -> str: return 'PNG_RGB'
+
+    def is_standardized(self) -> bool: return False
+
+    def standardize(self) -> tempfile.NamedTemporaryFile:
+        self.get_image_editor()
+
+        self._image_editor.save(**save_options['JPEG'])
+        return self._image_editor.result
