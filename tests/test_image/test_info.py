@@ -64,3 +64,20 @@ class TestStaticWebpRgbaInfo:
 
         assert standardized_image is image_info._image_editor.result
         assert image_info._image_editor.save.call_args == (save_options,)
+
+
+class TestStaticPngRgbInfo:
+    def test_name(self):
+        assert info.StaticPngRgbInfo.name == 'PNG_RGB'
+
+    def test_is_standardized(self, mocker):
+        assert info.StaticPngRgbInfo(mocker.Mock()).is_standardized() is False
+
+    def test_standardize(self, mocker):
+        mocker.patch('image.editor.StaticImageEditor')
+
+        image_info = info.StaticPngRgbInfo(mocker.Mock())
+        standardized_image = image_info.standardize()
+
+        assert standardized_image is image_info._image_editor.result
+        assert image_info._image_editor.save.call_args.kwargs == info.save_options['JPEG']
