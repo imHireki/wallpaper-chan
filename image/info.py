@@ -12,6 +12,9 @@ save_options = {
     "PNG": {"format": "PNG", "optimize": True},
 }
 
+def has_translucent_alpha(image: PIL.Image.Image) -> bool:
+    return image.getextrema()[-1][0] < 255
+
 
 class IStaticImageInfo(ABC):
     _image_editor: editor.StaticImageEditor
@@ -59,4 +62,22 @@ class StaticWebpRgbInfo(IStaticImageInfo):
         self.get_image_editor()
 
         self._image_editor.save(**save_options['JPEG'])
+        return self._image_editor.result
+
+
+class StaticWebpRgbaInfo(IStaticImageInfo):
+    @classmethod
+    @property
+    def name(cls) -> str: return 'WEBP_RGBA'
+
+    def is_standardized(self) -> bool: return False
+
+    def standardize(self) -> tempfile.NamedTemporaryFile:
+        self.get_image_editor()
+
+        if not has_translucent_alpha(self._image):
+            self._image_editor.save(**save_options['JPEG'])
+        else:
+            self._image_editor.save(**save_options['PNG'])
+
         return self._image_editor.result
