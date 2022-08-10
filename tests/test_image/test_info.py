@@ -1,3 +1,5 @@
+import pytest
+
 from image import info
 
 
@@ -40,3 +42,25 @@ class TestStaticWebpRgbInfo:
 
         assert standardized_image is image_info._image_editor.result
         assert image_info._image_editor.save.call_args.kwargs == info.save_options['JPEG']
+
+
+class TestStaticWebpRgbaInfo:
+    def test_name(self, mocker):
+        assert info.StaticWebpRgbaInfo(mocker.Mock()).name == 'WEBP_RGBA'
+
+    def test_is_standardized(self, mocker):
+        assert info.StaticWebpRgbaInfo(mocker.Mock()).is_standardized() is False
+
+    @pytest.mark.parametrize('extrema,save_options', [
+        [(0, 0, 0, (255, 255)), info.save_options['JPEG']],
+        [(0, 0, 0, (0  , 255)), info.save_options['PNG']]
+    ])
+    def test_standardize(self, mocker, extrema, save_options):
+        image_mock = mocker.Mock(getextrema=lambda: extrema)
+        mocker.patch('image.editor.StaticImageEditor')
+
+        image_info = info.StaticWebpRgbaInfo(image_mock)
+        standardized_image = image_info.standardize()
+
+        assert standardized_image is image_info._image_editor.result
+        assert image_info._image_editor.save.call_args == (save_options,)
