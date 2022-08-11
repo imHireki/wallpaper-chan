@@ -81,3 +81,25 @@ class TestStaticPngRgbInfo:
 
         assert standardized_image is image_info._image_editor.result
         assert image_info._image_editor.save.call_args.kwargs == info.save_options['JPEG']
+
+
+class TestStaticPngRgbaInfo:
+    def test_name(self):
+        assert info.StaticPngRgbaInfo.name == 'PNG_RGBA'
+
+    @pytest.mark.parametrize('extrema, is_translucent', [
+        [(0, 0, 0, (255, 255)), False],
+        [(0, 0, 0, (0, 255)), True],
+    ])
+    def test_is_standardized(self, mocker, extrema, is_translucent):
+        image_mock = mocker.Mock(getextrema=lambda: extrema)
+        assert info.StaticPngRgbaInfo(image_mock).is_standardized() is is_translucent
+
+    def test_standardize(self, mocker):
+        mocker.patch('image.editor.StaticImageEditor')
+
+        image_info = info.StaticPngRgbaInfo(mocker.Mock())
+        standardized_image = image_info.standardize()
+
+        assert standardized_image is image_info._image_editor.result
+        assert image_info._image_editor.save.call_args.kwargs == info.save_options['JPEG']
