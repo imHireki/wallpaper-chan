@@ -95,3 +95,18 @@ class StaticPngRgbInfo(IStaticImageInfo):
 
         self._image_editor.save(**save_options['JPEG'])
         return self._image_editor.result
+
+
+class StaticPngRgbaInfo(IStaticImageInfo):
+    @classmethod
+    @property
+    def name(cls) -> str: return 'PNG_RGBA'
+
+    def is_standardized(self) -> bool:
+        return has_translucent_alpha(self._image)
+
+    def standardize(self) -> tempfile.NamedTemporaryFile:
+        self.get_image_editor()
+
+        self._image_editor.save(**save_options['JPEG'])
+        return self._image_editor.result
