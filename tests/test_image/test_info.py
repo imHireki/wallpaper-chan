@@ -126,3 +126,21 @@ class TestAnimatedGifPInfo:
 
         assert standardized_image is image_info._image_editor.result
         assert image_info._image_editor.save.call_args.kwargs == save_options
+
+    def test_get_image_editor(self, mocker):
+        image_mock = mocker.Mock()
+        image_editor_mock = mocker.patch('image.editor.AnimatedImageEditor')
+
+        image_info = info.AnimatedGifPInfo(image_mock)
+
+        assert image_info.get_image_editor()
+        assert image_editor_mock.call_args.args == (image_mock,)
+
+    def test_get_image_for_color_clustering(self, mocker):
+        mocker.patch('image.editor.AnimatedImageEditor')
+        image_mock = mocker.Mock()
+
+        image_info = info.AnimatedGifPInfo(image_mock)
+
+        assert image_info.get_image_for_color_clustering()
+        assert image_mock.convert.call_args.args == (image_info._image_editor.actual_mode,)
