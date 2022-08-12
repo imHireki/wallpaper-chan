@@ -137,9 +137,6 @@ class IAnimatedImageInfo(ABC):
         self.get_image_editor()
         return self._image.convert(self._image_editor.actual_mode)
 
-    def _is_animated(self) -> bool:
-        return getattr(self._image, 'is_animated', False)
-
 
 class AnimatedGifPInfo(IAnimatedImageInfo):
     @classmethod
@@ -147,7 +144,7 @@ class AnimatedGifPInfo(IAnimatedImageInfo):
     def name(cls) -> str: return 'GIF_P'
 
     def is_standardized(self) -> bool:
-        return self._is_animated()
+        return getattr(self._image, 'is_animated', False)
 
     def standardize(self) -> tempfile.NamedTemporaryFile:
         self.get_image_editor()
