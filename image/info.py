@@ -139,3 +139,22 @@ class IAnimatedImageInfo(ABC):
 
     def _is_animated(self) -> bool:
         return getattr(self._image, 'is_animated', False)
+
+
+class AnimatedGifPInfo(IAnimatedImageInfo):
+    @classmethod
+    @property
+    def name(cls) -> str: return 'GIF_P'
+
+    def is_standardized(self) -> bool:
+        return self._is_animated()
+
+    def standardize(self) -> tempfile.NamedTemporaryFile:
+        self.get_image_editor()
+
+        if not 'transparency' in self._image.info:
+            self._image_editor.save(**save_options['JPEG'])
+        else:
+            self._image_editor.save(**save_options['PNG'])
+
+        return self._image_editor.result
