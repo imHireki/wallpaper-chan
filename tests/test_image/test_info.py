@@ -103,3 +103,26 @@ class TestStaticPngRgbaInfo:
 
         assert standardized_image is image_info._image_editor.result
         assert image_info._image_editor.save.call_args.kwargs == info.save_options['JPEG']
+
+
+class TestAnimatedGifPInfo:
+    def test_name(self):
+        assert info.AnimatedGifPInfo.name == 'GIF_P'
+
+    @pytest.mark.parametrize('is_animated', [True, False])
+    def test_is_standardized(self, mocker, is_animated):
+        image_mock = mocker.Mock(is_animated=is_animated)
+        assert info.AnimatedGifPInfo(image_mock).is_standardized() is is_animated
+
+    @pytest.mark.parametrize('_info,save_options', [
+        [{"transparency": 1}, info.save_options['PNG']], [{}, info.save_options['JPEG']]
+    ])
+    def test_standardize(self, mocker, _info, save_options):
+        image_mock = mocker.Mock(info=_info)
+        mocker.patch('image.editor.AnimatedImageEditor')
+
+        image_info = info.AnimatedGifPInfo(image_mock)
+        standardized_image = image_info.standardize()
+
+        assert standardized_image is image_info._image_editor.result
+        assert image_info._image_editor.save.call_args.kwargs == save_options
