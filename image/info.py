@@ -110,3 +110,32 @@ class StaticPngRgbaInfo(IStaticImageInfo):
 
         self._image_editor.save(**save_options['JPEG'])
         return self._image_editor.result
+
+
+class IAnimatedImageInfo(ABC):
+    _image_editor: editor.AnimatedImageEditor
+
+    def __init__(self, image: PIL.Image.Image) -> None:
+        self._image: PIL.Image.Image = image
+
+    @classmethod
+    @abstractmethod
+    def name(cls) -> str: pass
+
+    @abstractmethod
+    def is_standardized(self) -> bool: pass
+
+    @abstractmethod
+    def standardize(self) -> tempfile.NamedTemporaryFile: pass
+
+    def get_image_editor(self) -> editor.AnimatedImageEditor:
+        if not hasattr(self, '_image_editor'):
+            self._image_editor = editor.AnimatedImageEditor(self._image)
+        return self._image_editor
+
+    def get_image_for_color_clustering(self) -> PIL.Image.Image:
+        self.get_image_editor()
+        return self._image.convert(self._image_editor.actual_mode)
+
+    def _is_animated(self) -> bool:
+        return getattr(self._image, 'is_animated', False)
