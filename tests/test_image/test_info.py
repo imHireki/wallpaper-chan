@@ -164,3 +164,24 @@ class TestAnimatedWebpRgbaInfo:
 
         assert standardized_image is image_info._image_editor.result
         assert image_info._image_editor.save.call_args.kwargs == save_options
+
+
+class TestAnimatedWebpRgbInfo:
+    def test_name(self):
+        assert info.AnimatedWebpRgbInfo.name == 'WEBP_RGB'
+
+    def test_is_standardized(self, mocker):
+        assert info.AnimatedWebpRgbInfo(mocker.Mock()).is_standardized() is False
+
+    @pytest.mark.parametrize('is_animated,save_options', [
+        [True, info.save_options['GIF']],
+        [False, info.save_options['JPEG']]
+    ])
+    def test_standardize(self, mocker, is_animated, save_options):
+        mocker.patch('image.editor.AnimatedImageEditor')
+
+        image_info = info.AnimatedWebpRgbInfo(mocker.Mock(is_animated=is_animated))
+        standardized_image = image_info.standardize()
+
+        assert standardized_image is image_info._image_editor.result
+        assert image_info._image_editor.save.call_args.kwargs == save_options
