@@ -142,3 +142,25 @@ class TestAnimatedGifPInfo:
 
         assert image_info.get_image_for_color_clustering()
         assert image_mock.convert.call_args.args == (image_info._image_editor.actual_mode,)
+
+
+class TestAnimatedWebpRgbaInfo:
+    def test_name(self):
+        assert info.AnimatedWebpRgbaInfo.name == 'WEBP_RGBA'
+
+    def test_is_standardized(self, mocker):
+        assert info.AnimatedWebpRgbaInfo(mocker.Mock()).is_standardized() is False
+
+    @pytest.mark.parametrize('is_animated,_info,save_options', [
+        [True, {"transparency": 1}, info.save_options['GIF']],
+        [False, {"transparency": 1}, info.save_options['PNG']],
+        [False, {}, info.save_options['JPEG']]
+    ])
+    def test_standardize(self, mocker, is_animated, _info, save_options):
+        mocker.patch('image.editor.AnimatedImageEditor')
+
+        image_info = info.AnimatedWebpRgbaInfo(mocker.Mock(is_animated=is_animated, info=_info))
+        standardized_image = image_info.standardize()
+
+        assert standardized_image is image_info._image_editor.result
+        assert image_info._image_editor.save.call_args.kwargs == save_options
