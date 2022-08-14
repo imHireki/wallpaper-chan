@@ -155,3 +155,24 @@ class AnimatedGifPInfo(IAnimatedImageInfo):
             self._image_editor.save(**save_options['PNG'])
 
         return self._image_editor.result
+
+
+class AnimatedWebpRgbaInfo(IAnimatedImageInfo):
+    @classmethod
+    @property
+    def name(cls) -> str: return 'WEBP_RGBA'
+
+    def is_standardized(self) -> bool: return False
+
+    def standardize(self) -> tempfile.NamedTemporaryFile:
+        self.get_image_editor()
+
+        if not getattr(self._image, 'is_animated', False):
+            if not 'transparency' in self._image.info:
+                self._image_editor.save(**save_options['JPEG'])
+            else:
+                self._image_editor.save(**save_options['PNG'])
+        else:
+            self._image_editor.save(**save_options['GIF'])
+
+        return self._image_editor.result
