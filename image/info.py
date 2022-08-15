@@ -181,9 +181,5 @@ class AnimatedWebpRgbInfo(IAnimatedImageInfo):
     def standardize(self) -> tempfile.NamedTemporaryFile:
         self.get_image_editor()
 
-        if not getattr(self._image, 'is_animated', False):
-            self._image_editor.save(**save_options['JPEG'])
-        else:
-            self._image_editor.save(**save_options['GIF'])
-
+        self._image_editor.save(**save_options['GIF'])
         return self._image_editor.result
