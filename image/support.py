@@ -23,3 +23,9 @@ class StaticImageSupport(IImageSupport):
         return self._supported_images['STATIC'].get(
             '_'.join([self._image.format or '', self._image.mode])
         )
+
+class AnimatedImageSupport(IImageSupport):
+    def get_image_info(self) -> info.IAnimatedImageInfo:
+        return self._supported_images['ANIMATED'].get(
+            '_'.join([self._image.format or '', self._image.mode])
+        )
