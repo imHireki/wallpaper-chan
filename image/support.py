@@ -17,3 +17,9 @@ class IImageSupport(ABC):
     @abstractmethod
     def get_image_info(self) -> ImageInfo: pass
 
+
+class StaticImageSupport(IImageSupport):
+    def get_image_info(self) -> info.IStaticImageInfo:
+        return self._supported_images['STATIC'].get(
+            '_'.join([self._image.format or '', self._image.mode])
+        )
