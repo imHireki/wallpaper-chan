@@ -29,3 +29,29 @@ class AnimatedImageSupport(IImageSupport):
         return self._supported_images['ANIMATED'].get(
             '_'.join([self._image.format or '', self._image.mode])
         )
+
+
+class ImageSupportProxy(IImageSupport):
+    _image_support: IImageSupport
+    _image_info: ImageInfo
+
+    def get_image_info(self) -> ImageInfo:
+        self.get_image_support()
+
+        if not hasattr(self, '_image_info'):
+            self._image_info = self._image_support.get_image_info()
+        return self._image_info
+
+    def is_supported(self) -> bool:
+        self.get_image_info()
+
+        return self._image_info is not None
+
+    def get_image_support(self) -> IImageSupport:
+        if not hasattr(self, '_image_support'):
+            if not getattr(self._image, 'is_animated') and self._image.format != 'GIF':
+                self._image_support = StaticImageSupport(self._image, self._supported_images)
+            else:
+                self._image_support = AnimatedImageSupport(self._image, self._supported_images)
+
+        return self._image_support
