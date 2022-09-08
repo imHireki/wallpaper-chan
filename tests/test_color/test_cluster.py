@@ -4,15 +4,15 @@ from color import cluster
 
 
 def test_color_cluster(mocker):
-    def get_data(band):
-        vertically_align_color_bands = [(255, 255, 255, 0, 0),
-                                        (255, 255, 255, 0, 0),
-                                        (255, 255, 255, 0, 0)]
-        return vertically_align_color_bands[band]
+    expected_sorted_colors = [(255, 255, 255), (0, 0, 0)]
+    vertically_aligned_rgb = [
+        (255, 255, 255, 0, 0),  # Red
+        (255, 255, 255, 0, 0),  # Green
+        (255, 255, 255, 0, 0),  # Blue
+    ]
+    image = mocker.Mock(getdata=lambda band: vertically_aligned_rgb[band])
 
-    sorted_colors = [(255, 255, 255), (0, 0, 0)]
-
-    image = mocker.Mock(getdata=get_data)
     color_cluster = cluster.ColorCluster(image)
+    colors = color_cluster.get_colors()
 
-    assert color_cluster.sort_colors_by_incidences() == sorted_colors
+    assert colors == expected_sorted_colors
