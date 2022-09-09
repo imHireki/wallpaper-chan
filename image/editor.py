@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Union, Generator, Any
+from typing import Generator, Any
 import tempfile
 
 import PIL.ImageSequence
@@ -25,10 +25,11 @@ class IImageEditor(ABC):
     def convert_mode(self, mode: str) -> None: pass
 
     @abstractmethod
-    def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None: pass
+    def resize(self, size: tuple[int, int], resample: int,
+               reducing_gap: int) -> None: pass
 
     @abstractmethod
-    def save(self, format: str, **extra_options: dict[str, Any]) -> None: pass
+    def save(self, format: str, **extra_options: Any) -> None: pass
 
 
 class StaticImageEditor(IImageEditor):
@@ -48,17 +49,18 @@ class StaticImageEditor(IImageEditor):
     def convert_mode(self, mode: str) -> None:
         self._edited_image = self._original_image.convert(mode=mode)
 
-    def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
-        self._edited_image = self._original_image.resize(size=size, resample=resample,
-                                                         reducing_gap=reducing_gap)
+    def resize(self, size: tuple[int, int],
+               resample: int, reducing_gap: int) -> None:
+        self._edited_image = self._original_image.resize(
+            size=size, resample=resample, reducing_gap=reducing_gap)
 
-    def save(self, format: str, **extra_options: dict[str, Any]) -> None:
+    def save(self, format: str, **extra_options: Any) -> None:
         if not self._edited_image:
             self.convert_mode(self.actual_mode)
 
         with open(self._result.name, 'wb') as temporary_file:
-            self._edited_image.save(temporary_file, format=format, **extra_options)
-
+            self._edited_image.save(
+                temporary_file, format=format, **extra_options)
         self._edited_image = None
 
 
@@ -78,28 +80,34 @@ class AnimatedImageEditor(IImageEditor):
         return self._result
 
     def convert_mode(self, mode: str) -> None:
-        self._edited_frames = (frame.convert(mode=mode)
-                               if frame.mode != self.actual_mode else
-                               frame.copy()
-                               for frame in self._get_frames())
+        self._edited_frames = (
+            frame.convert(mode=mode)
+            if frame.mode != self.actual_mode else
+            frame.copy()
+            for frame in self._get_frames()
+        )
 
-    def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
-        resize_options = {"size": size, "resample": resample, "reducing_gap": reducing_gap}
+    def resize(self, size: tuple[int, int], resample: int,
+               reducing_gap: int) -> None:
+        resize_options = {
+            "size": size,
+            "resample": resample,
+            "reducing_gap": reducing_gap
+        }
+        self._edited_frames = (
+            frame.convert(self.actual_mode).resize(**resize_options)
+            if frame.mode != self.actual_mode else
+            frame.resize(**resize_options)
+            for frame in self._get_frames()
+        )
 
-        self._edited_frames = (frame.convert(self.actual_mode).resize(**resize_options)
-                               if frame.mode != self.actual_mode else
-                               frame.resize(**resize_options)
-                               for frame in self._get_frames())
-
-    def save(self, format: str, **extra_options: dict[str, Any]) -> None:
+    def save(self, format: str, **extra_options: Any) -> None:
         if not self._edited_frames:
             self.convert_mode(self.actual_mode)
-
         first_frame = next(self._edited_frames)
 
         if 'save_all' in extra_options:
             extra_options.update(append_images=list(self._edited_frames))
-
         self._edited_frames = None
 
         with open(self._result.name, 'wb') as temporary_file:
@@ -107,8 +115,11 @@ class AnimatedImageEditor(IImageEditor):
 
     def _find_actual_mode(self) -> str:
         if self._original_image.mode == 'RGBA':
-            return 'RGBA' if self._original_image.getextrema()[-1][0] < 255 else 'RGB'
-        return 'RGB' if not 'transparency' in self._original_image.info else 'RGBA'
+            alpha_value = self._original_image.getextrema()[-1][0]
+            return 'RGBA' if alpha_value < 255 else 'RGB'
+
+        has_transparency = 'transparency' in self._original_image.info
+        return 'RGB' if not has_transparency else 'RGBA'
 
     def _get_frames(self) -> PIL.ImageSequence.Iterator:
         return PIL.ImageSequence.Iterator(self._original_image)
@@ -118,8 +129,12 @@ class BulkResizeSaveEditor(IImageEditor):
     _image_editor_generator: Generator[IImageEditor, None, None]
     _current_image_editor: IImageEditor
 
-    def __init__(self, image_editor_generator: Generator[IImageEditor, None, None],
-                 save_options: dict[str, Any], resize_options: dict[str, Any]) -> None:
+    def __init__(
+            self,
+            image_editor_generator: Generator[IImageEditor, None, None],
+            save_options: dict[str, Any],
+            resize_options: dict[str, Any]) -> None:
+
         self._image_editor_generator = image_editor_generator
         self._save_options: dict[str, Any] = save_options
         self._resize_options: dict[str, Any] = resize_options
@@ -140,8 +155,10 @@ class BulkResizeSaveEditor(IImageEditor):
 
     def convert_mode(self, mode: str) -> None: pass
 
-    def resize(self, size: tuple[int, int], resample: int, reducing_gap: int) -> None:
-        self._current_image_editor.resize(size=size, resample=resample, reducing_gap=reducing_gap)
+    def resize(self, size: tuple[int, int], resample: int,
+               reducing_gap: int) -> None:
+        self._current_image_editor.resize(
+            size=size, resample=resample, reducing_gap=reducing_gap)
 
     def save(self, format: str, **extra_options) -> None:
         self._current_image_editor.save(format=format, **extra_options)

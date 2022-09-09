@@ -14,15 +14,18 @@ class TestStaticJpegRgbInfo:
         assert not info.StaticJpegRgbInfo(mocker.Mock()).standardize()
 
     def test_get_image_editor(self, mocker):
-        image_info = info.StaticJpegRgbInfo(mocker.Mock())
         image_editor_mock = mocker.patch('image.editor.StaticImageEditor')
+        image_info = info.StaticJpegRgbInfo(mocker.Mock())
 
         assert image_info.get_image_editor()
-        assert image_editor_mock.call_args.args == (image_info._image,)
+        assert image_editor_mock.call_args.args[0] == image_info._image
 
     def test_get_image_for_color_clustering(self, mocker):
         image_info = info.StaticJpegRgbInfo(mocker.Mock())
-        assert image_info.get_image_for_color_clustering() is image_info._image
+
+        image = image_info.get_image_for_color_clustering()
+
+        assert image == image_info._image
 
 
 class TestStaticWebpRgbInfo:
@@ -39,7 +42,8 @@ class TestStaticWebpRgbInfo:
         standardized_image = image_info.standardize()
 
         assert standardized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == info.save_options['JPEG']
+        assert (image_info._image_editor.save.call_args.kwargs
+                == info.SAVE_OPTIONS['JPEG'])
 
 
 class TestStaticWebpRgbaInfo:
@@ -49,19 +53,19 @@ class TestStaticWebpRgbaInfo:
     def test_is_standardized(self, mocker):
         assert info.StaticWebpRgbaInfo(mocker.Mock()).is_standardized() is False
 
-    @pytest.mark.parametrize('extrema,save_options', [
-        [(0, 0, 0, (255, 255)), info.save_options['JPEG']],
-        [(0, 0, 0, (0  , 255)), info.save_options['PNG']]
+    @pytest.mark.parametrize('extrema, save_options', [
+        [(0, 0, 0, (255, 255)), info.SAVE_OPTIONS['JPEG']],
+        [(0, 0, 0, (0  , 255)), info.SAVE_OPTIONS['PNG']]
     ])
     def test_standardize(self, mocker, extrema, save_options):
-        image_mock = mocker.Mock(getextrema=lambda: extrema)
         mocker.patch('image.editor.StaticImageEditor')
+        image_mock = mocker.Mock(getextrema=lambda: extrema)
 
         image_info = info.StaticWebpRgbaInfo(image_mock)
         standardized_image = image_info.standardize()
 
         assert standardized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args == (save_options,)
+        assert image_info._image_editor.save.call_args.kwargs == save_options
 
 
 class TestStaticPngRgbInfo:
@@ -78,7 +82,8 @@ class TestStaticPngRgbInfo:
         standardized_image = image_info.standardize()
 
         assert standardized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == info.save_options['JPEG']
+        assert (image_info._image_editor.save.call_args.kwargs
+                == info.SAVE_OPTIONS['JPEG'])
 
 
 class TestStaticPngRgbaInfo:
@@ -91,7 +96,10 @@ class TestStaticPngRgbaInfo:
     ])
     def test_is_standardized(self, mocker, extrema, is_translucent):
         image_mock = mocker.Mock(getextrema=lambda: extrema)
-        assert info.StaticPngRgbaInfo(image_mock).is_standardized() is is_translucent
+
+        is_standardized = info.StaticPngRgbaInfo(image_mock).is_standardized()
+
+        assert is_standardized is is_translucent
 
     def test_standardize(self, mocker):
         mocker.patch('image.editor.StaticImageEditor')
@@ -100,7 +108,8 @@ class TestStaticPngRgbaInfo:
         standardized_image = image_info.standardize()
 
         assert standardized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == info.save_options['JPEG']
+        assert (image_info._image_editor.save.call_args.kwargs
+                == info.SAVE_OPTIONS['JPEG'])
 
 
 class TestAnimatedGifPInfo:
@@ -110,14 +119,18 @@ class TestAnimatedGifPInfo:
     @pytest.mark.parametrize('is_animated', [True, False])
     def test_is_standardized(self, mocker, is_animated):
         image_mock = mocker.Mock(is_animated=is_animated)
-        assert info.AnimatedGifPInfo(image_mock).is_standardized() is is_animated
 
-    @pytest.mark.parametrize('_info,save_options', [
-        [{"transparency": 1}, info.save_options['PNG']], [{}, info.save_options['JPEG']]
+        is_standardized = info.AnimatedGifPInfo(image_mock).is_standardized()
+
+        assert is_standardized is is_animated
+
+    @pytest.mark.parametrize('_info, save_options', [
+        [{"transparency": 1}, info.SAVE_OPTIONS['PNG']],
+        [{}, info.SAVE_OPTIONS['JPEG']]
     ])
     def test_standardize(self, mocker, _info, save_options):
-        image_mock = mocker.Mock(info=_info)
         mocker.patch('image.editor.AnimatedImageEditor')
+        image_mock = mocker.Mock(info=_info)
 
         image_info = info.AnimatedGifPInfo(image_mock)
         standardized_image = image_info.standardize()
@@ -126,22 +139,24 @@ class TestAnimatedGifPInfo:
         assert image_info._image_editor.save.call_args.kwargs == save_options
 
     def test_get_image_editor(self, mocker):
-        image_mock = mocker.Mock()
         image_editor_mock = mocker.patch('image.editor.AnimatedImageEditor')
+        image_mock = mocker.Mock()
 
         image_info = info.AnimatedGifPInfo(image_mock)
 
         assert image_info.get_image_editor()
-        assert image_editor_mock.call_args.args == (image_mock,)
+        assert image_editor_mock.call_args.args[0] == image_mock
 
     def test_get_image_for_color_clustering(self, mocker):
         mocker.patch('image.editor.AnimatedImageEditor')
         image_mock = mocker.Mock()
 
         image_info = info.AnimatedGifPInfo(image_mock)
+        image = image_info.get_image_for_color_clustering()
 
-        assert image_info.get_image_for_color_clustering()
-        assert image_mock.convert.call_args.args == (image_info._image_editor.actual_mode,)
+        assert image
+        assert (image_mock.convert.call_args.args[0]
+                == image_info._image_editor.actual_mode)
 
 
 class TestAnimatedWebpRgbaInfo:
@@ -149,7 +164,9 @@ class TestAnimatedWebpRgbaInfo:
         assert info.AnimatedWebpRgbaInfo.name == 'WEBP_RGBA'
 
     def test_is_standardized(self, mocker):
-        assert info.AnimatedWebpRgbaInfo(mocker.Mock()).is_standardized() is False
+        is_standardized = info.AnimatedWebpRgbaInfo(
+            mocker.Mock()).is_standardized()
+        assert is_standardized is False
 
     def test_standardize(self, mocker):
         mocker.patch('image.editor.AnimatedImageEditor')
@@ -158,7 +175,8 @@ class TestAnimatedWebpRgbaInfo:
         standardized_image = image_info.standardize()
 
         assert standardized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == info.save_options['GIF']
+        assert (image_info._image_editor.save.call_args.kwargs
+                == info.SAVE_OPTIONS['GIF'])
 
 
 class TestAnimatedWebpRgbInfo:
@@ -166,7 +184,9 @@ class TestAnimatedWebpRgbInfo:
         assert info.AnimatedWebpRgbInfo.name == 'WEBP_RGB'
 
     def test_is_standardized(self, mocker):
-        assert info.AnimatedWebpRgbInfo(mocker.Mock()).is_standardized() is False
+        is_standardized = info.AnimatedWebpRgbInfo(
+            mocker.Mock()).is_standardized()
+        assert is_standardized is False
 
     def test_standardize(self, mocker):
         mocker.patch('image.editor.AnimatedImageEditor')
@@ -175,4 +195,5 @@ class TestAnimatedWebpRgbInfo:
         standardized_image = image_info.standardize()
 
         assert standardized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == info.save_options['GIF']
+        assert (image_info._image_editor.save.call_args.kwargs
+                == info.SAVE_OPTIONS['GIF'])

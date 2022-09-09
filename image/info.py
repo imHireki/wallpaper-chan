@@ -3,13 +3,26 @@ import tempfile
 
 import PIL.Image
 
-from . import editor
+from image import editor
 
 
-save_options = {
-    "GIF": {"format": "GIF", "optimize": True, "disposal": 2, "background": (0,0,0,0), "save_all": True},
-    "JPEG": {"format": "JPEG", "optimize": True, "quality": 75},
-    "PNG": {"format": "PNG", "optimize": True},
+SAVE_OPTIONS = {
+    "GIF": {
+        "format": "GIF",
+        "optimize": True,
+        "disposal": 2,
+        "background": (0,0,0,0),
+        "save_all": True
+    },
+    "JPEG": {
+        "format": "JPEG",
+        "optimize": True,
+        "quality": 75
+    },
+    "PNG": {
+        "format": "PNG",
+        "optimize": True
+    },
 }
 
 def has_translucent_alpha(image: PIL.Image.Image) -> bool:
@@ -61,7 +74,7 @@ class StaticWebpRgbInfo(IStaticImageInfo):
     def standardize(self) -> tempfile.NamedTemporaryFile:
         self.get_image_editor()
 
-        self._image_editor.save(**save_options['JPEG'])
+        self._image_editor.save(**SAVE_OPTIONS['JPEG'])
         return self._image_editor.result
 
 
@@ -76,9 +89,9 @@ class StaticWebpRgbaInfo(IStaticImageInfo):
         self.get_image_editor()
 
         if not has_translucent_alpha(self._image):
-            self._image_editor.save(**save_options['JPEG'])
+            self._image_editor.save(**SAVE_OPTIONS['JPEG'])
         else:
-            self._image_editor.save(**save_options['PNG'])
+            self._image_editor.save(**SAVE_OPTIONS['PNG'])
 
         return self._image_editor.result
 
@@ -93,7 +106,7 @@ class StaticPngRgbInfo(IStaticImageInfo):
     def standardize(self) -> tempfile.NamedTemporaryFile:
         self.get_image_editor()
 
-        self._image_editor.save(**save_options['JPEG'])
+        self._image_editor.save(**SAVE_OPTIONS['JPEG'])
         return self._image_editor.result
 
 
@@ -108,7 +121,7 @@ class StaticPngRgbaInfo(IStaticImageInfo):
     def standardize(self) -> tempfile.NamedTemporaryFile:
         self.get_image_editor()
 
-        self._image_editor.save(**save_options['JPEG'])
+        self._image_editor.save(**SAVE_OPTIONS['JPEG'])
         return self._image_editor.result
 
 
@@ -150,9 +163,9 @@ class AnimatedGifPInfo(IAnimatedImageInfo):
         self.get_image_editor()
 
         if not 'transparency' in self._image.info:
-            self._image_editor.save(**save_options['JPEG'])
+            self._image_editor.save(**SAVE_OPTIONS['JPEG'])
         else:
-            self._image_editor.save(**save_options['PNG'])
+            self._image_editor.save(**SAVE_OPTIONS['PNG'])
 
         return self._image_editor.result
 
@@ -167,7 +180,7 @@ class AnimatedWebpRgbaInfo(IAnimatedImageInfo):
     def standardize(self) -> tempfile.NamedTemporaryFile:
         self.get_image_editor()
 
-        self._image_editor.save(**save_options['GIF'])
+        self._image_editor.save(**SAVE_OPTIONS['GIF'])
         return self._image_editor.result
 
 
@@ -181,5 +194,5 @@ class AnimatedWebpRgbInfo(IAnimatedImageInfo):
     def standardize(self) -> tempfile.NamedTemporaryFile:
         self.get_image_editor()
 
-        self._image_editor.save(**save_options['GIF'])
+        self._image_editor.save(**SAVE_OPTIONS['GIF'])
         return self._image_editor.result
