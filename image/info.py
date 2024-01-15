@@ -6,25 +6,6 @@ import PIL.Image
 from image import editor
 
 
-SAVE_OPTIONS = {
-    "GIF": {
-        "format": "GIF",
-        "optimize": True,
-        "disposal": 2,
-        "background": (0,0,0,0),
-        "save_all": True
-    },
-    "JPEG": {
-        "format": "JPEG",
-        "optimize": True,
-        "quality": 75
-    },
-    "PNG": {
-        "format": "PNG",
-        "optimize": True
-    },
-}
-
 def has_translucent_alpha(image: PIL.Image.Image) -> bool:
     return image.getextrema()[-1][0] < 255
 
@@ -43,7 +24,8 @@ class IStaticImageInfo(ABC):
     def is_optimized(self) -> bool: pass
 
     @abstractmethod
-    def optimize(self) -> _TemporaryFileWrapper: pass
+    def optimize(self, save_options: dict[str, dict]
+                 ) -> _TemporaryFileWrapper: pass
 
     def get_image_editor(self) -> editor.StaticImageEditor:
         if not hasattr(self, '_image_editor'):
@@ -71,10 +53,10 @@ class StaticWebpRgbInfo(IStaticImageInfo):
 
     def is_optimized(self) -> bool: return False
 
-    def optimize(self) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
-        self._image_editor.save(**SAVE_OPTIONS['JPEG'])
+        self._image_editor.save(**save_options['JPEG'])
         return self._image_editor.result
 
 
@@ -85,13 +67,13 @@ class StaticWebpRgbaInfo(IStaticImageInfo):
 
     def is_optimized(self) -> bool: return False
 
-    def optimize(self) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         if not has_translucent_alpha(self._image):
-            self._image_editor.save(**SAVE_OPTIONS['JPEG'])
+            self._image_editor.save(**save_options['JPEG'])
         else:
-            self._image_editor.save(**SAVE_OPTIONS['PNG'])
+            self._image_editor.save(**save_options['PNG'])
 
         return self._image_editor.result
 
@@ -103,10 +85,10 @@ class StaticPngRgbInfo(IStaticImageInfo):
 
     def is_optimized(self) -> bool: return False
 
-    def optimize(self) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
-        self._image_editor.save(**SAVE_OPTIONS['JPEG'])
+        self._image_editor.save(**save_options['JPEG'])
         return self._image_editor.result
 
 
@@ -118,10 +100,10 @@ class StaticPngRgbaInfo(IStaticImageInfo):
     def is_optimized(self) -> bool:
         return has_translucent_alpha(self._image)
 
-    def optimize(self) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
-        self._image_editor.save(**SAVE_OPTIONS['JPEG'])
+        self._image_editor.save(**save_options['JPEG'])
         return self._image_editor.result
 
 
@@ -139,7 +121,8 @@ class IAnimatedImageInfo(ABC):
     def is_optimized(self) -> bool: pass
 
     @abstractmethod
-    def optimize(self) -> _TemporaryFileWrapper: pass
+    def optimize(self, save_options: dict[str, dict]
+                 ) -> _TemporaryFileWrapper: pass
 
     def get_image_editor(self) -> editor.AnimatedImageEditor:
         if not hasattr(self, '_image_editor'):
@@ -159,13 +142,13 @@ class AnimatedGifPInfo(IAnimatedImageInfo):
     def is_optimized(self) -> bool:
         return getattr(self._image, 'is_animated', False)
 
-    def optimize(self) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         if not 'transparency' in self._image.info:
-            self._image_editor.save(**SAVE_OPTIONS['JPEG'])
+            self._image_editor.save(**save_options['JPEG'])
         else:
-            self._image_editor.save(**SAVE_OPTIONS['PNG'])
+            self._image_editor.save(**save_options['PNG'])
 
         return self._image_editor.result
 
@@ -177,10 +160,10 @@ class AnimatedWebpRgbaInfo(IAnimatedImageInfo):
 
     def is_optimized(self) -> bool: return False
 
-    def optimize(self) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
-        self._image_editor.save(**SAVE_OPTIONS['GIF'])
+        self._image_editor.save(**save_options['GIF'])
         return self._image_editor.result
 
 
@@ -191,8 +174,8 @@ class AnimatedWebpRgbInfo(IAnimatedImageInfo):
 
     def is_optimized(self) -> bool: return False
 
-    def optimize(self) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
-        self._image_editor.save(**SAVE_OPTIONS['GIF'])
+        self._image_editor.save(**save_options['GIF'])
         return self._image_editor.result

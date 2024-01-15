@@ -1,5 +1,6 @@
 import pytest
 
+from tests.conftest import SAVE_OPTIONS
 from image import info
 
 
@@ -39,11 +40,11 @@ class TestStaticWebpRgbInfo:
         mocker.patch('image.editor.StaticImageEditor')
 
         image_info = info.StaticWebpRgbInfo(mocker.Mock())
-        optimized_image = image_info.optimize()
+        optimized_image = image_info.optimize(SAVE_OPTIONS)
 
         assert optimized_image is image_info._image_editor.result
         assert (image_info._image_editor.save.call_args.kwargs
-                == info.SAVE_OPTIONS['JPEG'])
+                == SAVE_OPTIONS['JPEG'])
 
 
 class TestStaticWebpRgbaInfo:
@@ -54,15 +55,15 @@ class TestStaticWebpRgbaInfo:
         assert info.StaticWebpRgbaInfo(mocker.Mock()).is_optimized() is False
 
     @pytest.mark.parametrize('extrema, save_options', [
-        [(0, 0, 0, (255, 255)), info.SAVE_OPTIONS['JPEG']],
-        [(0, 0, 0, (0  , 255)), info.SAVE_OPTIONS['PNG']]
+        [(0, 0, 0, (255, 255)), SAVE_OPTIONS['JPEG']],
+        [(0, 0, 0, (0  , 255)), SAVE_OPTIONS['PNG']]
     ])
     def test_optimize(self, mocker, extrema, save_options):
         mocker.patch('image.editor.StaticImageEditor')
         image_mock = mocker.Mock(getextrema=lambda: extrema)
 
         image_info = info.StaticWebpRgbaInfo(image_mock)
-        optimized_image = image_info.optimize()
+        optimized_image = image_info.optimize(SAVE_OPTIONS)
 
         assert optimized_image is image_info._image_editor.result
         assert image_info._image_editor.save.call_args.kwargs == save_options
@@ -79,11 +80,11 @@ class TestStaticPngRgbInfo:
         mocker.patch('image.editor.StaticImageEditor')
 
         image_info = info.StaticPngRgbInfo(mocker.Mock())
-        optimized_image = image_info.optimize()
+        optimized_image = image_info.optimize(SAVE_OPTIONS)
 
         assert optimized_image is image_info._image_editor.result
         assert (image_info._image_editor.save.call_args.kwargs
-                == info.SAVE_OPTIONS['JPEG'])
+                == SAVE_OPTIONS['JPEG'])
 
 
 class TestStaticPngRgbaInfo:
@@ -105,11 +106,11 @@ class TestStaticPngRgbaInfo:
         mocker.patch('image.editor.StaticImageEditor')
 
         image_info = info.StaticPngRgbaInfo(mocker.Mock())
-        optimized_image = image_info.optimize()
+        optimized_image = image_info.optimize(SAVE_OPTIONS)
 
         assert optimized_image is image_info._image_editor.result
         assert (image_info._image_editor.save.call_args.kwargs
-                == info.SAVE_OPTIONS['JPEG'])
+                == SAVE_OPTIONS['JPEG'])
 
 
 class TestAnimatedGifPInfo:
@@ -125,15 +126,15 @@ class TestAnimatedGifPInfo:
         assert is_optimized is is_animated
 
     @pytest.mark.parametrize('_info, save_options', [
-        [{"transparency": 1}, info.SAVE_OPTIONS['PNG']],
-        [{}, info.SAVE_OPTIONS['JPEG']]
+        [{"transparency": 1},SAVE_OPTIONS['PNG']],
+        [{}, SAVE_OPTIONS['JPEG']]
     ])
     def test_optimize(self, mocker, _info, save_options):
         mocker.patch('image.editor.AnimatedImageEditor')
         image_mock = mocker.Mock(info=_info)
 
         image_info = info.AnimatedGifPInfo(image_mock)
-        optimized_image = image_info.optimize()
+        optimized_image = image_info.optimize(SAVE_OPTIONS)
 
         assert optimized_image is image_info._image_editor.result
         assert image_info._image_editor.save.call_args.kwargs == save_options
@@ -172,11 +173,11 @@ class TestAnimatedWebpRgbaInfo:
         mocker.patch('image.editor.AnimatedImageEditor')
 
         image_info = info.AnimatedWebpRgbaInfo(mocker.Mock())
-        optimized_image = image_info.optimize()
+        optimized_image = image_info.optimize(SAVE_OPTIONS)
 
         assert optimized_image is image_info._image_editor.result
         assert (image_info._image_editor.save.call_args.kwargs
-                == info.SAVE_OPTIONS['GIF'])
+                == SAVE_OPTIONS['GIF'])
 
 
 class TestAnimatedWebpRgbInfo:
@@ -192,8 +193,8 @@ class TestAnimatedWebpRgbInfo:
         mocker.patch('image.editor.AnimatedImageEditor')
 
         image_info = info.AnimatedWebpRgbInfo(mocker.Mock())
-        optimized_image = image_info.optimize()
+        optimized_image = image_info.optimize(SAVE_OPTIONS)
 
         assert optimized_image is image_info._image_editor.result
         assert (image_info._image_editor.save.call_args.kwargs
-                == info.SAVE_OPTIONS['GIF'])
+                == SAVE_OPTIONS['GIF'])

@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
+from typing import Type
 
 import PIL.Image
 
 from image import info
 
 
-ImageInfo = info.IStaticImageInfo | info.IAnimatedImageInfo
-SupportedImages = dict[str, dict[str, ImageInfo]]
+ImageInfo = Type[info.IStaticImageInfo] | Type[info.IAnimatedImageInfo] | None
+SupportedImages = dict[str, dict[str, Type[ImageInfo]]]
 
 
 class IImageSupport(ABC):
@@ -20,14 +21,14 @@ class IImageSupport(ABC):
 
 
 class StaticImageSupport(IImageSupport):
-    def get_image_info(self) -> info.IStaticImageInfo|None:
+    def get_image_info(self) -> ImageInfo:
         return self._supported_images['STATIC'].get(
             '_'.join([self._image.format or '', self._image.mode])
             )  # type: ignore
 
 
 class AnimatedImageSupport(IImageSupport):
-    def get_image_info(self) -> info.IAnimatedImageInfo|None:
+    def get_image_info(self) -> ImageInfo:
         return self._supported_images['ANIMATED'].get(
             '_'.join([self._image.format or '', self._image.mode])
             )  # type: ignore
