@@ -1,10 +1,10 @@
-from typing import Sequence, Mapping
+from typing import Iterator
 
 import PIL.Image
 
 
-RGBSequences = tuple[Sequence]
-RGB = tuple[int]
+SplitRGB = list[list[int]]
+RGB = tuple[int, ...]
 
 
 class ColorCluster:
@@ -13,19 +13,17 @@ class ColorCluster:
 
     def get_colors(self) -> list[RGB]:
         rgb_sequences = self._get_rgb_sequences()
-        colors = self._extract_colors(rgb_sequences)
+        colors = self._make_colors(rgb_sequences)
         colors_with_incidences = self._calculate_color_incidences(colors)
         return self._sort_colors_by_incidences(colors_with_incidences)
 
-    def _get_rgb_sequences(self) -> RGBSequences:
+    def _get_rgb_sequences(self) -> SplitRGB:
         return [self._image.getdata(band) for band in range(3)]
 
-    def _extract_colors(self, rgb_sequences: RGBSequences
-                        ) -> Mapping[RGBSequences, RGB]:
+    def _make_colors(self, rgb_sequences: SplitRGB) -> Iterator[RGB]:
         return map(lambda *rgb: tuple(rgb), *rgb_sequences)
 
-    def _calculate_color_incidences(
-            self, colors: Mapping[RGBSequences, RGB]) -> dict[RGB, int]:
+    def _calculate_color_incidences(self, colors: Iterator[RGB]) -> dict[RGB, int]:
         color_with_incidences: dict[RGB, int] = {}
 
         for color in colors:

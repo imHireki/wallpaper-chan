@@ -6,28 +6,31 @@ from image import info
 
 
 ImageInfo = info.IStaticImageInfo | info.IAnimatedImageInfo
+SupportedImages = dict[str, dict[str, ImageInfo]]
 
 
 class IImageSupport(ABC):
     def __init__(self, image: PIL.Image.Image,
-                 supported_images: dict[str, ImageInfo]):
+                 supported_images: SupportedImages):
         self._image: PIL.Image.Image = image
-        self._supported_images: dict[str, ImageInfo] = supported_images
+        self._supported_images: SupportedImages = supported_images
 
     @abstractmethod
     def get_image_info(self) -> ImageInfo: pass
 
 
 class StaticImageSupport(IImageSupport):
-    def get_image_info(self) -> info.IStaticImageInfo:
+    def get_image_info(self) -> info.IStaticImageInfo|None:
         return self._supported_images['STATIC'].get(
-            '_'.join([self._image.format or '', self._image.mode]))
+            '_'.join([self._image.format or '', self._image.mode])
+            )  # type: ignore
 
 
 class AnimatedImageSupport(IImageSupport):
-    def get_image_info(self) -> info.IAnimatedImageInfo:
+    def get_image_info(self) -> info.IAnimatedImageInfo|None:
         return self._supported_images['ANIMATED'].get(
-            '_'.join([self._image.format or '', self._image.mode]))
+            '_'.join([self._image.format or '', self._image.mode])
+            )  # type: ignore
 
 
 class ImageSupportProxy(IImageSupport):

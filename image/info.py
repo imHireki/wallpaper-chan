@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-import tempfile
+from tempfile import _TemporaryFileWrapper
 
 import PIL.Image
 
@@ -43,7 +43,7 @@ class IStaticImageInfo(ABC):
     def is_standardized(self) -> bool: pass
 
     @abstractmethod
-    def standardize(self) -> tempfile.NamedTemporaryFile: pass
+    def standardize(self) -> _TemporaryFileWrapper: pass
 
     def get_image_editor(self) -> editor.StaticImageEditor:
         if not hasattr(self, '_image_editor'):
@@ -71,7 +71,7 @@ class StaticWebpRgbInfo(IStaticImageInfo):
 
     def is_standardized(self) -> bool: return False
 
-    def standardize(self) -> tempfile.NamedTemporaryFile:
+    def standardize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         self._image_editor.save(**SAVE_OPTIONS['JPEG'])
@@ -85,7 +85,7 @@ class StaticWebpRgbaInfo(IStaticImageInfo):
 
     def is_standardized(self) -> bool: return False
 
-    def standardize(self) -> tempfile.NamedTemporaryFile:
+    def standardize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         if not has_translucent_alpha(self._image):
@@ -103,7 +103,7 @@ class StaticPngRgbInfo(IStaticImageInfo):
 
     def is_standardized(self) -> bool: return False
 
-    def standardize(self) -> tempfile.NamedTemporaryFile:
+    def standardize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         self._image_editor.save(**SAVE_OPTIONS['JPEG'])
@@ -118,7 +118,7 @@ class StaticPngRgbaInfo(IStaticImageInfo):
     def is_standardized(self) -> bool:
         return has_translucent_alpha(self._image)
 
-    def standardize(self) -> tempfile.NamedTemporaryFile:
+    def standardize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         self._image_editor.save(**SAVE_OPTIONS['JPEG'])
@@ -139,7 +139,7 @@ class IAnimatedImageInfo(ABC):
     def is_standardized(self) -> bool: pass
 
     @abstractmethod
-    def standardize(self) -> tempfile.NamedTemporaryFile: pass
+    def standardize(self) -> _TemporaryFileWrapper: pass
 
     def get_image_editor(self) -> editor.AnimatedImageEditor:
         if not hasattr(self, '_image_editor'):
@@ -159,7 +159,7 @@ class AnimatedGifPInfo(IAnimatedImageInfo):
     def is_standardized(self) -> bool:
         return getattr(self._image, 'is_animated', False)
 
-    def standardize(self) -> tempfile.NamedTemporaryFile:
+    def standardize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         if not 'transparency' in self._image.info:
@@ -177,7 +177,7 @@ class AnimatedWebpRgbaInfo(IAnimatedImageInfo):
 
     def is_standardized(self) -> bool: return False
 
-    def standardize(self) -> tempfile.NamedTemporaryFile:
+    def standardize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         self._image_editor.save(**SAVE_OPTIONS['GIF'])
@@ -191,7 +191,7 @@ class AnimatedWebpRgbInfo(IAnimatedImageInfo):
 
     def is_standardized(self) -> bool: return False
 
-    def standardize(self) -> tempfile.NamedTemporaryFile:
+    def standardize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         self._image_editor.save(**SAVE_OPTIONS['GIF'])
