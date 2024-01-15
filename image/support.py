@@ -40,7 +40,7 @@ class ImageSupportProxy(IImageSupport):
 
     def get_image_support(self) -> IImageSupport:
         if not hasattr(self, '_image_support'):
-            if (not getattr(self._image, 'is_animated')
+            if (not hasattr(self._image, 'is_animated')
                 and self._image.format != 'GIF'):
                 self._image_support = StaticImageSupport(
                     self._image, self._supported_images)
