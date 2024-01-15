@@ -40,10 +40,10 @@ class IStaticImageInfo(ABC):
     def name(cls) -> str: pass
 
     @abstractmethod
-    def is_standardized(self) -> bool: pass
+    def is_optimized(self) -> bool: pass
 
     @abstractmethod
-    def standardize(self) -> _TemporaryFileWrapper: pass
+    def optimize(self) -> _TemporaryFileWrapper: pass
 
     def get_image_editor(self) -> editor.StaticImageEditor:
         if not hasattr(self, '_image_editor'):
@@ -59,9 +59,9 @@ class StaticJpegRgbInfo(IStaticImageInfo):
     @property
     def name(cls) -> str: return 'JPEG_RGB'
 
-    def is_standardized(self) -> bool: return True
+    def is_optimized(self) -> bool: return True
 
-    def standardize(self) -> None: pass
+    def optimize(self) -> None: pass
 
 
 class StaticWebpRgbInfo(IStaticImageInfo):
@@ -69,9 +69,9 @@ class StaticWebpRgbInfo(IStaticImageInfo):
     @property
     def name(cls) -> str: return 'WEBP_RGB'
 
-    def is_standardized(self) -> bool: return False
+    def is_optimized(self) -> bool: return False
 
-    def standardize(self) -> _TemporaryFileWrapper:
+    def optimize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         self._image_editor.save(**SAVE_OPTIONS['JPEG'])
@@ -83,9 +83,9 @@ class StaticWebpRgbaInfo(IStaticImageInfo):
     @property
     def name(cls) -> str: return 'WEBP_RGBA'
 
-    def is_standardized(self) -> bool: return False
+    def is_optimized(self) -> bool: return False
 
-    def standardize(self) -> _TemporaryFileWrapper:
+    def optimize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         if not has_translucent_alpha(self._image):
@@ -101,9 +101,9 @@ class StaticPngRgbInfo(IStaticImageInfo):
     @property
     def name(cls) -> str: return 'PNG_RGB'
 
-    def is_standardized(self) -> bool: return False
+    def is_optimized(self) -> bool: return False
 
-    def standardize(self) -> _TemporaryFileWrapper:
+    def optimize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         self._image_editor.save(**SAVE_OPTIONS['JPEG'])
@@ -115,10 +115,10 @@ class StaticPngRgbaInfo(IStaticImageInfo):
     @property
     def name(cls) -> str: return 'PNG_RGBA'
 
-    def is_standardized(self) -> bool:
+    def is_optimized(self) -> bool:
         return has_translucent_alpha(self._image)
 
-    def standardize(self) -> _TemporaryFileWrapper:
+    def optimize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         self._image_editor.save(**SAVE_OPTIONS['JPEG'])
@@ -136,10 +136,10 @@ class IAnimatedImageInfo(ABC):
     def name(cls) -> str: pass
 
     @abstractmethod
-    def is_standardized(self) -> bool: pass
+    def is_optimized(self) -> bool: pass
 
     @abstractmethod
-    def standardize(self) -> _TemporaryFileWrapper: pass
+    def optimize(self) -> _TemporaryFileWrapper: pass
 
     def get_image_editor(self) -> editor.AnimatedImageEditor:
         if not hasattr(self, '_image_editor'):
@@ -156,10 +156,10 @@ class AnimatedGifPInfo(IAnimatedImageInfo):
     @property
     def name(cls) -> str: return 'GIF_P'
 
-    def is_standardized(self) -> bool:
+    def is_optimized(self) -> bool:
         return getattr(self._image, 'is_animated', False)
 
-    def standardize(self) -> _TemporaryFileWrapper:
+    def optimize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         if not 'transparency' in self._image.info:
@@ -175,9 +175,9 @@ class AnimatedWebpRgbaInfo(IAnimatedImageInfo):
     @property
     def name(cls) -> str: return 'WEBP_RGBA'
 
-    def is_standardized(self) -> bool: return False
+    def is_optimized(self) -> bool: return False
 
-    def standardize(self) -> _TemporaryFileWrapper:
+    def optimize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         self._image_editor.save(**SAVE_OPTIONS['GIF'])
@@ -189,9 +189,9 @@ class AnimatedWebpRgbInfo(IAnimatedImageInfo):
     @property
     def name(cls) -> str: return 'WEBP_RGB'
 
-    def is_standardized(self) -> bool: return False
+    def is_optimized(self) -> bool: return False
 
-    def standardize(self) -> _TemporaryFileWrapper:
+    def optimize(self) -> _TemporaryFileWrapper:
         self.get_image_editor()
 
         self._image_editor.save(**SAVE_OPTIONS['GIF'])
