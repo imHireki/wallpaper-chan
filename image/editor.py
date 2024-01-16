@@ -148,39 +148,3 @@ def bulk_resize(editor: IImageEditor, resize_save_options: list[dict]):
         del editor.result
         yield result
 
-
-class BulkResizeSaveEditor(IImageEditor):
-    def __init__(self, editor: IImageEditor,
-                 resize_save_options: list[dict]):
-        self._editor: IImageEditor = editor
-        self._options: Iterator = iter(resize_save_options)
-
-    def __next__(self) -> _TemporaryFileWrapper:
-        options = next(self._options)
-        self.resize(**options.get('resize'))
-        self.save(**options.get('save'))
-        result = self.result
-        del self.result
-        return result
-
-    @property
-    def actual_mode(self) -> str:
-        return self._editor.actual_mode
-
-    @property
-    def result(self) -> _TemporaryFileWrapper:
-        return self._editor.result
-
-    @result.deleter
-    def result(self) -> None: pass
-
-    def convert_mode(self, mode: str) -> None: pass
-
-    def resize(self, size: tuple[int, int], resample: Resample,
-               reducing_gap: int) -> None:
-        self._editor.resize(
-            size=size, resample=resample, reducing_gap=reducing_gap)
-
-    def save(self, format: str, **extra_options) -> None:
-        self._editor.save(format=format, **extra_options)
-
