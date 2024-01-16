@@ -24,6 +24,10 @@ class IImageEditor(ABC):
     @abstractmethod
     def result(self) -> _TemporaryFileWrapper: pass
 
+    @result.deleter
+    @abstractmethod
+    def result(self) -> None: pass
+
     @abstractmethod
     def convert_mode(self, mode: str) -> None: pass
 
@@ -48,6 +52,10 @@ class StaticImageEditor(IImageEditor):
     @property
     def result(self) -> _TemporaryFileWrapper:
         return self._result
+
+    @result.deleter
+    def result(self) -> None:
+        self._result = get_named_temporary_file()
 
     def convert_mode(self, mode: str) -> None:
         self._edited_image = self._original_image.convert(mode=mode)
@@ -82,6 +90,10 @@ class AnimatedImageEditor(IImageEditor):
     @property
     def result(self) -> _TemporaryFileWrapper:
         return self._result
+
+    @result.deleter
+    def result(self) -> None:
+        self._result = get_named_temporary_file()
 
     def convert_mode(self, mode: str) -> None:
         self._edited_frames = (

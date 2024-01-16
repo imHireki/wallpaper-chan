@@ -22,6 +22,11 @@ class TestStaticImageEditor:
 
         assert image_editor.result is patch_tempfile.return_value
 
+    def test_result_deleter(self, mocker, patch_tempfile):
+        image_editor = editor.StaticImageEditor(mocker.Mock())
+        del image_editor.result
+        assert patch_tempfile.call_count == 2
+
     def test_convert_mode(self, mocker):
         image_editor = editor.StaticImageEditor(mocker.Mock())
         image_editor.convert_mode('RGBA')
@@ -71,6 +76,11 @@ class TestAnimatedImageEditor:
         image_editor = editor.AnimatedImageEditor(mocker.Mock())
 
         assert image_editor.result is patch_tempfile.return_value
+
+    def test_result_deleter(self, mocker, patch_tempfile):
+        image_editor = editor.StaticImageEditor(mocker.Mock())
+        del image_editor.result
+        assert patch_tempfile.call_count == 2
 
     def test_convert_mode(self, mocker):
         new_mode = 'RGBA'
