@@ -1,5 +1,5 @@
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
-from typing import Generator, Any, Literal
+from typing import Generator, Any, Literal, Iterator
 from abc import ABC, abstractmethod
 
 import PIL.ImageSequence
@@ -7,7 +7,6 @@ import PIL.Image
 
 
 Resample = PIL.Image.Resampling | Literal[0, 1, 2, 3, 4, 5] | None
-ImageEditorGenerator = Generator['IImageEditor', None, None]
 
 def get_named_temporary_file() -> _TemporaryFileWrapper:
     temporary_file = NamedTemporaryFile(delete=False)
@@ -141,37 +140,47 @@ class AnimatedImageEditor(IImageEditor):
         return PIL.ImageSequence.Iterator(self._original_image)
 
 
+def bulk_resize(editor: IImageEditor, resize_save_options: list[dict]):
+    for options in resize_save_options:
+        editor.resize(**options['resize'])
+        editor.save(**options['save'])
+        result = editor.result
+        del editor.result
+        yield result
+
+
 class BulkResizeSaveEditor(IImageEditor):
-    _image_editor_generator: ImageEditorGenerator
-    _current_image_editor: IImageEditor
-
-    def __init__(self, image_editor_generator: ImageEditorGenerator,
-                 save_options: dict, resize_options: dict) -> None:
-
-        self._image_editor_generator = image_editor_generator
-        self._save_options: dict = save_options
-        self._resize_options: dict = resize_options
+    def __init__(self, editor: IImageEditor,
+                 resize_save_options: list[dict]):
+        self._editor: IImageEditor = editor
+        self._options: Iterator = iter(resize_save_options)
 
     def __next__(self) -> _TemporaryFileWrapper:
-        self._current_image_editor = next(self._image_editor_generator)
-        self.resize(**self._resize_options)
-        self.save(**self._save_options)
-        return self.result
+        options = next(self._options)
+        self.resize(**options.get('resize'))
+        self.save(**options.get('save'))
+        result = self.result
+        del self.result
+        return result
 
     @property
     def actual_mode(self) -> str:
-        return self._current_image_editor.actual_mode
+        return self._editor.actual_mode
 
     @property
     def result(self) -> _TemporaryFileWrapper:
-        return self._current_image_editor.result
+        return self._editor.result
+
+    @result.deleter
+    def result(self) -> None: pass
 
     def convert_mode(self, mode: str) -> None: pass
 
     def resize(self, size: tuple[int, int], resample: Resample,
                reducing_gap: int) -> None:
-        self._current_image_editor.resize(
+        self._editor.resize(
             size=size, resample=resample, reducing_gap=reducing_gap)
 
     def save(self, format: str, **extra_options) -> None:
-        self._current_image_editor.save(format=format, **extra_options)
+        self._editor.save(format=format, **extra_options)
+

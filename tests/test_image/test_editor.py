@@ -133,49 +133,33 @@ class TestAnimatedImageEditor:
                 == editor_options['save_options'])
 
 
-class TestBulkResizeSaveEditor:
-    def test_actual_mode(self, mocker):
-        _image_editor_mock = mocker.Mock(actual_mode='RGB')
+def test_bulk_resize(mocker, editor_options, patch_tempfile):
+    editor_options = dict(resize=editor_options['resize_options'],
+                          save=editor_options['save_options'])
+    options = [
+        {
+            'resize': {'size': (256, 256), 'resample': 1, 'reducing_gap': 3},
+            'save':   {'format': 'JPEG', 'optimize': True, 'quality': 75}
+        },
+        {
+            'resize': {'size': (128, 128), 'resample': 1, 'reducing_gap': 3},
+            'save':   {'format': 'PNG', 'optimize': True, 'quality': 75}
+        }
+    ]
 
-        image_editor = editor.BulkResizeSaveEditor(
-            (_ for _ in [_image_editor_mock]), {}, {})
-        image_editor._current_image_editor = _image_editor_mock
+    editor_mock = mocker.Mock()
+    bulk_resize = editor.bulk_resize(editor_mock, options)
 
-        assert image_editor.actual_mode == _image_editor_mock.actual_mode
+    next(bulk_resize)
+    assert editor_mock.resize.call_args.kwargs == options[0]['resize']
+    assert editor_mock.save.call_args.kwargs == options[0]['save']
+    assert editor_mock.return_value
 
-    def test_result(self, mocker):
-        _image_editor = mocker.Mock()
+    assert not hasattr(editor_mock, 'result')
+    editor_mock.result = mocker.Mock()  # reset result (test only)
 
-        image_editor = editor.BulkResizeSaveEditor(
-            (_ for _ in [_image_editor]), {}, {})
-        image_editor._current_image_editor = _image_editor
+    next(bulk_resize)
+    assert editor_mock.resize.call_args.kwargs == options[1]['resize']
+    assert editor_mock.save.call_args.kwargs == options[1]['save']
+    assert editor_mock.return_value
 
-        assert image_editor.result is _image_editor.result
-
-    def test_convert_mode(self, mocker):
-        image_editor = editor.BulkResizeSaveEditor(
-            (_ for _ in [mocker.Mock()]), {}, {})
-
-        assert not image_editor.convert_mode('RGB')
-
-    def test_resize(self, mocker, editor_options):
-        _image_editor = mocker.Mock()
-
-        image_editor = editor.BulkResizeSaveEditor(
-            (_ for _ in [_image_editor]), {}, {})
-        image_editor._current_image_editor = _image_editor
-        image_editor.resize(**editor_options['resize_options'])
-
-        assert (_image_editor.resize.call_args.kwargs
-                == editor_options['resize_options'])
-
-    def test_save(self, mocker, editor_options):
-        _image_editor = mocker.Mock()
-
-        image_editor = editor.BulkResizeSaveEditor(
-            (_ for _ in [_image_editor]), {}, {})
-        image_editor._current_image_editor = _image_editor
-        image_editor.save(**editor_options['save_options'])
-
-        assert (_image_editor.save.call_args.kwargs
-                == editor_options['save_options'])
