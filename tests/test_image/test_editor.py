@@ -15,16 +15,6 @@ class TestStaticImageEditor:
 
         assert image_editor.actual_mode == image_mode
 
-    def test_result(self, mocker, patch_tempfile):
-        image_editor = editor.StaticImageEditor(mocker.Mock())
-
-        assert image_editor.result is patch_tempfile.return_value
-
-    def test_result_deleter(self, mocker, patch_tempfile):
-        image_editor = editor.StaticImageEditor(mocker.Mock())
-        del image_editor.result
-        assert patch_tempfile.call_count == 2
-
     def test_convert_mode(self, mocker):
         image_editor = editor.StaticImageEditor(mocker.Mock())
         image_editor.convert_mode("RGBA")
@@ -40,14 +30,14 @@ class TestStaticImageEditor:
         assert image_mock.resize.call_args.kwargs == editor_options["resize_options"]
 
     def test_save(self, mocker, editor_options):
-        edited_image_mock = mocker.Mock()
-        image_convert_mock = mocker.Mock(return_value=edited_image_mock)
+        fp = mocker.Mock()
 
-        image_editor = editor.StaticImageEditor(mocker.Mock(convert=image_convert_mock))
-        image_editor.save(**editor_options["save_options"])
+        image_editor = editor.StaticImageEditor(mocker.Mock())
+        edited_image = mocker.patch.object(image_editor, "_processed_image")
 
-        assert image_convert_mock.called
-        assert edited_image_mock.save.call_args.kwargs == editor_options["save_options"]
+        image_editor.save(fp, **editor_options["save_options"])
+
+        edited_image.save.assert_called_with(fp, **editor_options["save_options"])
 
 
 class TestAnimatedImageEditor:
