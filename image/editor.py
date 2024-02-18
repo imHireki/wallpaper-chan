@@ -1,14 +1,16 @@
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
-from typing import Generator, Any, Literal
+from typing import Generator, Any, Literal, IO
 from abc import ABC, abstractmethod
 
+from PIL._typing import StrOrBytesPath
+from PIL.Image import Image, Resampling
 import PIL.ImageSequence
-import PIL.Image
 
 from image.profile import has_translucent_alpha
 
 
-Resample = PIL.Image.Resampling | Literal[0, 1, 2, 3, 4, 5] | None
+Resample = Resampling | Literal[0, 1, 2, 3, 4, 5] | None
+Fp = StrOrBytesPath | IO[bytes]
 
 
 def get_named_temporary_file() -> _TemporaryFileWrapper:
@@ -23,16 +25,6 @@ class IImageEditor(ABC):
     def actual_mode(self) -> str:
         pass
 
-    @property
-    @abstractmethod
-    def result(self) -> _TemporaryFileWrapper:
-        pass
-
-    @result.deleter
-    @abstractmethod
-    def result(self) -> None:
-        pass
-
     @abstractmethod
     def convert_mode(self, mode: str) -> None:
         pass
@@ -44,47 +36,30 @@ class IImageEditor(ABC):
         pass
 
     @abstractmethod
-    def save(self, format: str, **extra_options: Any) -> None:
+    def save(self, fp: Fp, format: str, **extra_options: Any) -> None:
         pass
 
 
 class StaticImageEditor(IImageEditor):
-    def __init__(self, image: PIL.Image.Image) -> None:
-        self._original_image: PIL.Image.Image = image
-        self._edited_image: PIL.Image.Image | None = None
-        self._result: _TemporaryFileWrapper = get_named_temporary_file()
+    def __init__(self, image: Image) -> None:
+        self._original_image = self._processed_image = image
 
     @property
     def actual_mode(self) -> str:
         return self._original_image.mode
 
-    @property
-    def result(self) -> _TemporaryFileWrapper:
-        return self._result
-
-    @result.deleter
-    def result(self) -> None:
-        self._result = get_named_temporary_file()
-
     def convert_mode(self, mode: str) -> None:
-        self._edited_image = self._original_image.convert(mode=mode)
+        self._processed_image = self._original_image.convert(mode=mode)
 
     def resize(
         self, size: tuple[int, int], resample: Resample, reducing_gap: int
     ) -> None:
-        self._edited_image = self._original_image.resize(
+        self._processed_image = self._original_image.resize(
             size=size, resample=resample, reducing_gap=reducing_gap
         )
 
-    def save(self, format: str, **extra_options: Any) -> None:
-        if not self._edited_image:
-            self.convert_mode(self.actual_mode)
-
-        with open(self._result.name, "wb") as temporary_file:
-            self._edited_image.save(  # type: ignore
-                temporary_file, format=format, **extra_options
-            )
-        self._edited_image = None
+    def save(self, fp: Fp, format: str, **extra_options: Any) -> None:
+        self._processed_image.save(fp, format=format, **extra_options)
 
 
 class AnimatedImageEditor(IImageEditor):
