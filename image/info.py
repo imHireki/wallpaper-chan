@@ -12,13 +12,10 @@ def has_translucent_alpha(image: PIL.Image.Image) -> bool:
 
 class IStaticImageInfo(ABC):
     _image_editor: editor.StaticImageEditor
+    name: str
 
     def __init__(self, image: PIL.Image.Image) -> None:
         self._image: PIL.Image.Image = image
-
-    @classmethod
-    @abstractmethod
-    def name(cls) -> str: pass
 
     @abstractmethod
     def is_optimized(self) -> bool: pass
@@ -37,9 +34,7 @@ class IStaticImageInfo(ABC):
 
 
 class StaticJpegRgbInfo(IStaticImageInfo):
-    @classmethod
-    @property
-    def name(cls) -> str: return 'JPEG_RGB'
+    name = 'JPEG_RGB'
 
     def is_optimized(self) -> bool: return True
 
@@ -47,9 +42,7 @@ class StaticJpegRgbInfo(IStaticImageInfo):
 
 
 class StaticWebpRgbInfo(IStaticImageInfo):
-    @classmethod
-    @property
-    def name(cls) -> str: return 'WEBP_RGB'
+    name = 'WEBP_RGB'
 
     def is_optimized(self) -> bool: return False
 
@@ -61,9 +54,7 @@ class StaticWebpRgbInfo(IStaticImageInfo):
 
 
 class StaticWebpRgbaInfo(IStaticImageInfo):
-    @classmethod
-    @property
-    def name(cls) -> str: return 'WEBP_RGBA'
+    name = 'WEBP_RGBA'
 
     def is_optimized(self) -> bool: return False
 
@@ -79,9 +70,7 @@ class StaticWebpRgbaInfo(IStaticImageInfo):
 
 
 class StaticPngRgbInfo(IStaticImageInfo):
-    @classmethod
-    @property
-    def name(cls) -> str: return 'PNG_RGB'
+    name = 'PNG_RGB'
 
     def is_optimized(self) -> bool: return False
 
@@ -93,9 +82,7 @@ class StaticPngRgbInfo(IStaticImageInfo):
 
 
 class StaticPngRgbaInfo(IStaticImageInfo):
-    @classmethod
-    @property
-    def name(cls) -> str: return 'PNG_RGBA'
+    name = 'PNG_RGBA'
 
     def is_optimized(self) -> bool:
         return has_translucent_alpha(self._image)
@@ -109,13 +96,10 @@ class StaticPngRgbaInfo(IStaticImageInfo):
 
 class IAnimatedImageInfo(ABC):
     _image_editor: editor.AnimatedImageEditor
+    name: str
 
     def __init__(self, image: PIL.Image.Image) -> None:
         self._image: PIL.Image.Image = image
-
-    @classmethod
-    @abstractmethod
-    def name(cls) -> str: pass
 
     @abstractmethod
     def is_optimized(self) -> bool: pass
@@ -135,9 +119,7 @@ class IAnimatedImageInfo(ABC):
 
 
 class AnimatedGifPInfo(IAnimatedImageInfo):
-    @classmethod
-    @property
-    def name(cls) -> str: return 'GIF_P'
+    name = 'GIF_P'
 
     def is_optimized(self) -> bool:
         return getattr(self._image, 'is_animated', False)
@@ -154,9 +136,7 @@ class AnimatedGifPInfo(IAnimatedImageInfo):
 
 
 class AnimatedWebpRgbaInfo(IAnimatedImageInfo):
-    @classmethod
-    @property
-    def name(cls) -> str: return 'WEBP_RGBA'
+    name = 'WEBP_RGBA'
 
     def is_optimized(self) -> bool: return False
 
@@ -168,9 +148,7 @@ class AnimatedWebpRgbaInfo(IAnimatedImageInfo):
 
 
 class AnimatedWebpRgbInfo(IAnimatedImageInfo):
-    @classmethod
-    @property
-    def name(cls) -> str: return 'WEBP_RGB'
+    name = 'WEBP_RGB'
 
     def is_optimized(self) -> bool: return False
 
