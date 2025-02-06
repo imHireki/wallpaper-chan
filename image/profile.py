@@ -10,7 +10,7 @@ def has_translucent_alpha(image: PIL.Image.Image) -> bool:
     return image.getextrema()[-1][0] < 255
 
 
-class IStaticImageInfo(ABC):
+class IStaticImageProfile(ABC):
     _image_editor: editor.StaticImageEditor
     name: str
 
@@ -33,7 +33,7 @@ class IStaticImageInfo(ABC):
         return self._image
 
 
-class StaticJpegRgbInfo(IStaticImageInfo):
+class StaticJpegRgbProfile(IStaticImageProfile):
     name = 'JPEG_RGB'
 
     def is_optimized(self) -> bool: return True
@@ -41,7 +41,7 @@ class StaticJpegRgbInfo(IStaticImageInfo):
     def optimize(self) -> None: pass
 
 
-class StaticWebpRgbInfo(IStaticImageInfo):
+class StaticWebpRgbProfile(IStaticImageProfile):
     name = 'WEBP_RGB'
 
     def is_optimized(self) -> bool: return False
@@ -53,7 +53,7 @@ class StaticWebpRgbInfo(IStaticImageInfo):
         return self._image_editor.result
 
 
-class StaticWebpRgbaInfo(IStaticImageInfo):
+class StaticWebpRgbaProfile(IStaticImageProfile):
     name = 'WEBP_RGBA'
 
     def is_optimized(self) -> bool: return False
@@ -69,7 +69,7 @@ class StaticWebpRgbaInfo(IStaticImageInfo):
         return self._image_editor.result
 
 
-class StaticPngRgbInfo(IStaticImageInfo):
+class StaticPngRgbProfile(IStaticImageProfile):
     name = 'PNG_RGB'
 
     def is_optimized(self) -> bool: return False
@@ -81,7 +81,7 @@ class StaticPngRgbInfo(IStaticImageInfo):
         return self._image_editor.result
 
 
-class StaticPngRgbaInfo(IStaticImageInfo):
+class StaticPngRgbaProfile(IStaticImageProfile):
     name = 'PNG_RGBA'
 
     def is_optimized(self) -> bool:
@@ -94,7 +94,7 @@ class StaticPngRgbaInfo(IStaticImageInfo):
         return self._image_editor.result
 
 
-class IAnimatedImageInfo(ABC):
+class IAnimatedImageProfile(ABC):
     _image_editor: editor.AnimatedImageEditor
     name: str
 
@@ -118,7 +118,7 @@ class IAnimatedImageInfo(ABC):
         return self._image.convert(self._image_editor.actual_mode)
 
 
-class AnimatedGifPInfo(IAnimatedImageInfo):
+class AnimatedGifPProfile(IAnimatedImageProfile):
     name = 'GIF_P'
 
     def is_optimized(self) -> bool:
@@ -135,7 +135,7 @@ class AnimatedGifPInfo(IAnimatedImageInfo):
         return self._image_editor.result
 
 
-class AnimatedWebpRgbaInfo(IAnimatedImageInfo):
+class AnimatedWebpRgbaProfile(IAnimatedImageProfile):
     name = 'WEBP_RGBA'
 
     def is_optimized(self) -> bool: return False
@@ -147,7 +147,7 @@ class AnimatedWebpRgbaInfo(IAnimatedImageInfo):
         return self._image_editor.result
 
 
-class AnimatedWebpRgbInfo(IAnimatedImageInfo):
+class AnimatedWebpRgbProfile(IAnimatedImageProfile):
     name = 'WEBP_RGB'
 
     def is_optimized(self) -> bool: return False
