@@ -8,18 +8,18 @@ def test_static_image_support(mocker):
     image_mock = mocker.Mock(format='JPEG', mode='RGB')
 
     image_support = support.StaticImageSupport(image_mock, supported_images)
-    image_info = image_support.get_image_info()
+    image_profile = image_support.get_image_profile()
 
-    assert image_info is supported_images['STATIC']['JPEG_RGB']
+    assert image_profile is supported_images['STATIC']['JPEG_RGB']
 
 def test_animated_image_support(mocker):
     supported_images = {"ANIMATED": {"GIF_P": mocker.Mock()}}
     image_mock = mocker.Mock(format='GIF', mode='P')
 
     image_support = support.AnimatedImageSupport(image_mock, supported_images)
-    image_info = image_support.get_image_info()
+    image_profile = image_support.get_image_profile()
 
-    assert image_info is supported_images['ANIMATED']['GIF_P']
+    assert image_profile is supported_images['ANIMATED']['GIF_P']
 
 
 class TestImageSupportProxy:
@@ -39,23 +39,23 @@ class TestImageSupportProxy:
         assert image_support is image_support_mock.return_value
         assert proxy._image_support is image_support_mock.return_value
 
-    def test_get_image_info(self, mocker):
+    def test_get_image_profile(self, mocker):
         proxy = support.ImageSupportProxy(mocker.Mock(), {})
-        image_support_mock = mocker.patch.object(proxy, 'get_image_support')
+        mocker.patch.object(proxy, 'get_image_support')
         proxy._image_support = mocker.Mock()
 
-        image_info = proxy.get_image_info()
+        image_profile = proxy.get_image_profile()
 
-        assert image_info is proxy._image_support.get_image_info.return_value
-        assert (proxy._image_info
-                is proxy._image_support.get_image_info.return_value)
+        assert image_profile is proxy._image_support.get_image_profile.return_value
+        assert (proxy._image_profile
+                is proxy._image_support.get_image_profile.return_value)
 
-    @pytest.mark.parametrize('_image_info', [1, 0])
-    def test_is_supported(self, mocker, _image_info):
+    @pytest.mark.parametrize('_image_profile', [1, 0])
+    def test_is_supported(self, mocker, _image_profile):
         proxy = support.ImageSupportProxy(mocker.Mock(), {})
-        image_info_mock = mocker.patch.object(proxy, 'get_image_info')
-        proxy._image_info = _image_info
+        mocker.patch.object(proxy, 'get_image_profile')
+        proxy._image_profile = _image_profile
 
         is_supported = proxy.is_supported()
 
-        assert is_supported is (_image_info is not None)
+        assert is_supported is (_image_profile is not None)
