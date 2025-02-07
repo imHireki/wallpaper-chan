@@ -4,23 +4,26 @@ from image import category
 
 
 def test_static_image_category(mocker):
-    supported_images = {"STATIC": {"JPEG_RGB": mocker.Mock()}}
+    profile_class = mocker.Mock()
+    supported_images = {"STATIC": {"JPEG_RGB": profile_class}}
     image_mock = mocker.Mock(format='JPEG', mode='RGB')
 
     image_category = category.StaticImageCategory(image_mock, supported_images)
     image_profile = image_category.get_image_profile()
 
-    assert image_profile is supported_images['STATIC']['JPEG_RGB']
+    assert image_profile is profile_class.return_value
+    profile_class.assert_called_with(image_mock)
 
 def test_animated_image_category(mocker):
-    supported_images = {"ANIMATED": {"GIF_P": mocker.Mock()}}
+    profile_class = mocker.Mock()
+    supported_images = {"ANIMATED": {"GIF_P": profile_class}}
     image_mock = mocker.Mock(format='GIF', mode='P')
 
     image_category = category.AnimatedImageCategory(image_mock, supported_images)
     image_profile = image_category.get_image_profile()
 
-    assert image_profile is supported_images['ANIMATED']['GIF_P']
-
+    assert image_profile is profile_class.return_value
+    profile_class.assert_called_with(image_mock)
 
 class TestImageCategoryProxy:
     @pytest.mark.parametrize('is_animated, format, support_patch', [
