@@ -54,8 +54,3 @@ class ImageCategoryProxy(IImageCategory):
         if not hasattr(self, '_image_profile'):
             self._image_profile = self._image_category.get_image_profile()
         return self._image_profile
-
-    def is_supported(self) -> bool:
-        self.get_image_profile()
-
-        return self._image_profile is not None

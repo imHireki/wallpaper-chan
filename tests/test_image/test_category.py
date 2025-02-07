@@ -50,12 +50,3 @@ class TestImageCategoryProxy:
         assert (proxy._image_profile
                 is proxy._image_category.get_image_profile.return_value)
 
-    @pytest.mark.parametrize('_image_profile', [1, 0])
-    def test_is_supported(self, mocker, _image_profile):
-        proxy = category.ImageCategoryProxy(mocker.Mock(), {})
-        mocker.patch.object(proxy, 'get_image_profile')
-        proxy._image_profile = _image_profile
-
-        is_supported = proxy.is_supported()
-
-        assert is_supported is (_image_profile is not None)
