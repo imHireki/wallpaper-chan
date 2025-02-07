@@ -4,6 +4,22 @@ from tests.conftest import SAVE_OPTIONS
 from image import profile
 
 
+@pytest.mark.parametrize(
+    "extrema, bands",
+    [
+        [False, (0, 255)],  # GreySlcale
+        [False, ((0, 255), (0, 255), (0, 255))],  # RGB
+        [True, ((0, 255), (0, 255), (0, 255), (0, 255))],  # RGBA wo translucency
+        [True, ((0, 255), (0, 255), (0, 255), (0, 100))],  # RGBA w translucency
+    ],
+)
+def test_has_translucent_alpha(mocker, bands, extrema):
+    img = mocker.Mock(getextrema=lambda: bands)
+    hta = profile.has_translucent_alpha(img)
+
+    assert hta == extrema
+
+
 class TestStaticJpegRgbProfile:
     def test_name(self):
         assert profile.StaticJpegRgbProfile.name == 'JPEG_RGB'
@@ -54,19 +70,24 @@ class TestStaticWebpRgbaProfile:
     def test_is_optimized(self, mocker):
         assert profile.StaticWebpRgbaProfile(mocker.Mock()).is_optimized() is False
 
-    @pytest.mark.parametrize('extrema, save_options', [
-        [(0, 0, 0, (255, 255)), SAVE_OPTIONS['JPEG']],
-        [(0, 0, 0, (0  , 255)), SAVE_OPTIONS['PNG']]
-    ])
+    @pytest.mark.parametrize(
+        "extrema, save_options",
+        [
+            [((0, 255), (0, 255), (0, 255), (255, 255)), SAVE_OPTIONS["JPEG"]],
+            [((0, 255), (0, 255), (0, 255), (0, 255)), SAVE_OPTIONS["PNG"]],
+        ],
+    )
     def test_optimize(self, mocker, extrema, save_options):
-        mocker.patch('image.editor.StaticImageEditor')
         image_mock = mocker.Mock(getextrema=lambda: extrema)
 
         image_info = profile.StaticWebpRgbaProfile(image_mock)
-        optimized_image = image_info.optimize(SAVE_OPTIONS)
+        editor = image_info._image_editor = mocker.Mock()
+
+        opts = {save_options["format"]: save_options}
+        optimized_image = image_info.optimize(opts)
 
         assert optimized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == save_options
+        editor.save.assert_called_with(**save_options)
 
 
 class TestStaticPngRgbProfile:
@@ -89,12 +110,15 @@ class TestStaticPngRgbProfile:
 
 class TestStaticPngRgbaProfile:
     def test_name(self):
-        assert profile.StaticPngRgbaProfile.name == 'PNG_RGBA'
+        assert profile.StaticPngRgbaProfile.name == "PNG_RGBA"
 
-    @pytest.mark.parametrize('extrema, is_translucent', [
-        [(0, 0, 0, (255, 255)), False],
-        [(0, 0, 0, (0, 255)), True],
-    ])
+    @pytest.mark.parametrize(
+        "extrema, is_translucent",
+        [
+            [((0, 255), (0, 255), (0, 255), (255, 255)), False],
+            [((0, 255), (0, 255), (0, 255), (0, 255)), True],
+        ],
+    )
     def test_is_optimized(self, mocker, extrema, is_translucent):
         image_mock = mocker.Mock(getextrema=lambda: extrema)
 
