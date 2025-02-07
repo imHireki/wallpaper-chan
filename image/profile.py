@@ -7,7 +7,11 @@ from image import editor
 
 
 def has_translucent_alpha(image: PIL.Image.Image) -> bool:
-    return image.getextrema()[-1][0] < 255
+    bands_min_max = image.getextrema()
+
+    if isinstance(bands_min_max[0], tuple) and len(bands_min_max) == 4:  # RGBA
+        return bands_min_max[3][0] < 255
+    return False
 
 
 class IStaticImageProfile(ABC):
