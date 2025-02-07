@@ -6,8 +6,10 @@ import PIL.Image
 from image.profile import IStaticImageProfile, IAnimatedImageProfile
 
 
-ImageProfile = Type[IStaticImageProfile] | Type[IAnimatedImageProfile] | None
-SupportedImages = dict[str, dict[str, ImageProfile]]
+ImageProfile = IStaticImageProfile | IAnimatedImageProfile | None
+SupportedImages = dict[
+    str, dict[str, Type[IStaticImageProfile] | Type[IAnimatedImageProfile]]
+]
 
 
 class IImageCategory(ABC):
@@ -16,19 +18,22 @@ class IImageCategory(ABC):
         self._supported_images: SupportedImages = supported_images
 
     @abstractmethod
-    def get_image_profile(self) -> ImageProfile: pass
+    def get_image_profile(self) -> ImageProfile:
+        pass
 
 
 class StaticImageCategory(IImageCategory):
     def get_image_profile(self) -> ImageProfile:
-        format_mode = '_'.join([self._image.format or '', self._image.mode])
-        return self._supported_images['STATIC'].get(format_mode)
+        format_mode = "_".join([self._image.format or "", self._image.mode])
+        profile_class = self._supported_images["STATIC"].get(format_mode)
+        return profile_class(self._image) if profile_class else None
 
 
 class AnimatedImageCategory(IImageCategory):
     def get_image_profile(self) -> ImageProfile:
-        format_mode = '_'.join([self._image.format or '', self._image.mode])
-        return self._supported_images['ANIMATED'].get(format_mode)
+        format_mode = "_".join([self._image.format or "", self._image.mode])
+        profile_class = self._supported_images["ANIMATED"].get(format_mode)
+        return profile_class(self._image) if profile_class else None
 
 
 class ImageCategoryProxy(IImageCategory):
@@ -51,6 +56,6 @@ class ImageCategoryProxy(IImageCategory):
     def get_image_profile(self) -> ImageProfile:
         self.get_image_category()
 
-        if not hasattr(self, '_image_profile'):
+        if not hasattr(self, "_image_profile"):
             self._image_profile = self._image_category.get_image_profile()
         return self._image_profile
