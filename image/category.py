@@ -40,17 +40,18 @@ class ImageCategoryProxy(IImageCategory):
     _image_category: IImageCategory
     _image_profile: ImageProfile
 
-    def get_image_category(self) -> IImageCategory:
-        if not hasattr(self, '_image_category'):
-            # Determine between static or animated
-            if (getattr(self._image, 'is_animated', False) is False
-                and self._image.format != 'GIF'):
-                self._image_category = StaticImageCategory(
-                    self._image, self._supported_images)
-            else:
-                self._image_category = AnimatedImageCategory(
-                    self._image, self._supported_images)
+    def _determine_category(self) -> IImageCategory:
+        if (
+            getattr(self._image, "is_animated", False) is False
+            and self._image.format != "GIF"
+        ):
+            return StaticImageCategory(self._image, self._supported_images)
+        else:
+            return AnimatedImageCategory(self._image, self._supported_images)
 
+    def get_image_category(self) -> IImageCategory:
+        if not hasattr(self, "_image_category"):
+            self._image_category = self._determine_category()
         return self._image_category
 
     def get_image_profile(self) -> ImageProfile:
