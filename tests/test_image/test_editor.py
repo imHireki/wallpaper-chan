@@ -60,8 +60,8 @@ class TestAnimatedImageEditor:
     @pytest.mark.parametrize('mode, _info, extrema, _actual_mode', [
         ['P', {}, 0, 'RGB'],
         ['P', {'transparency': 1}, 0, 'RGBA'],
-        ['RGBA', {}, [0, 0, 0, (255, 255)], 'RGB'],
-        ['RGBA', {}, [0, 0, 0, (0, 255)], 'RGBA']
+        ['RGBA', {}, [(), (), (), (255, 255)], 'RGB'],
+        ['RGBA', {}, [(), (), (), (0, 255)], 'RGBA']
     ])
     def test_actual_mode(self, mocker, mode, _info, extrema, _actual_mode):
         image_editor = editor.AnimatedImageEditor(
