@@ -5,6 +5,8 @@ from abc import ABC, abstractmethod
 import PIL.ImageSequence
 import PIL.Image
 
+from image.profile import has_translucent_alpha
+
 
 Resample = PIL.Image.Resampling | Literal[0, 1, 2, 3, 4, 5] | None
 
@@ -130,9 +132,7 @@ class AnimatedImageEditor(IImageEditor):
 
     def _find_actual_mode(self) -> str:
         if self._original_image.mode == 'RGBA':
-            alpha_value = self._original_image.getextrema()[-1][0]
-            return 'RGBA' if alpha_value < 255 else 'RGB'
-
+            return 'RGBA' if has_translucent_alpha(self._original_image) else 'RGB'
         has_transparency = 'transparency' in self._original_image.info
         return 'RGB' if not has_transparency else 'RGBA'
 
