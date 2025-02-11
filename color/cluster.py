@@ -27,10 +27,7 @@ class ColorCluster:
         color_with_incidences: dict[RGB, int] = {}
 
         for color in colors:
-            if color not in color_with_incidences:
-                color_with_incidences[color] = 1
-            else:
-                color_with_incidences[color] += 1
+            color_with_incidences[color] = color_with_incidences.get(color, 0) + 1
         return color_with_incidences
 
     def _sort_colors_by_incidences(
