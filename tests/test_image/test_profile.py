@@ -12,7 +12,7 @@ class TestStaticJpegRgbProfile:
         assert profile.StaticJpegRgbProfile(mocker.Mock()).is_optimized() is True
 
     def test_optimize(self, mocker):
-        assert not profile.StaticJpegRgbProfile(mocker.Mock()).optimize()
+        assert not profile.StaticJpegRgbProfile(mocker.Mock()).optimize({})
 
     def test_get_image_editor(self, mocker):
         image_editor_mock = mocker.patch("image.editor.StaticImageEditor")

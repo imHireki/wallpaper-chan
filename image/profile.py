@@ -19,7 +19,7 @@ class IStaticImageProfile(ABC):
         pass
 
     @abstractmethod
-    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper | None:
         pass
 
     def get_image_editor(self) -> editor.StaticImageEditor:
@@ -37,8 +37,8 @@ class StaticJpegRgbProfile(IStaticImageProfile):
     def is_optimized(self) -> bool:
         return True
 
-    def optimize(self) -> None:
-        pass
+    def optimize(self, save_options: dict[str, dict]) -> None:
+        return
 
 
 class StaticWebpRgbProfile(IStaticImageProfile):
