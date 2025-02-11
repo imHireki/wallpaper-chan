@@ -9,14 +9,16 @@ class IColorPalette(ABC):
         self._color_cluster: ColorCluster = color_cluster
 
     @staticmethod
-    def _hexlify_rgb(rgb: RGB)-> str:
-        return '#' + hexlify(bytearray(rgb)).decode('ascii')
+    def _hexlify_rgb(rgb: RGB) -> str:
+        return "#" + hexlify(bytearray(rgb)).decode("ascii")
 
     @abstractmethod
-    def get_palette_data(self): pass
+    def get_palette_data(self):
+        pass
 
     @abstractmethod
-    def get_palette_data_as_hex(self): pass
+    def get_palette_data_as_hex(self):
+        pass
 
 
 class DominantColor(IColorPalette):
@@ -28,12 +30,12 @@ class DominantColor(IColorPalette):
 
 
 class RangeColorPalette(IColorPalette):
-    def get_palette_data(self, stop: int, start: int = 0,
-                         step: int = 1) -> list[RGB]:
+    def get_palette_data(self, stop: int, start: int = 0, step: int = 1) -> list[RGB]:
         return self._color_cluster.get_colors()[start:stop:step]
 
-    def get_palette_data_as_hex(self, stop: int, start: int = 0,
-                                step: int = 1) -> list[str]:
+    def get_palette_data_as_hex(
+        self, stop: int, start: int = 0, step: int = 1
+    ) -> list[str]:
         return [
             self._hexlify_rgb(color)
             for color in self.get_palette_data(stop, start, step)

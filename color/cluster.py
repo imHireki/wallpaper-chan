@@ -34,8 +34,10 @@ class ColorCluster:
         return color_with_incidences
 
     def _sort_colors_by_incidences(
-            self, colors_with_incidences: dict[RGB, int]) -> list[RGB]:
+        self, colors_with_incidences: dict[RGB, int]
+    ) -> list[RGB]:
         return sorted(
             colors_with_incidences,
             key=lambda color_with_incidences: color_with_incidences[1],
-            reverse=True)
+            reverse=True,
+        )
