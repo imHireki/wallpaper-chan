@@ -17,4 +17,3 @@ def test_has_translucent_alpha(mocker, bands, extrema):
     hta = utils.has_translucent_alpha(img)
 
     assert hta == extrema
-
