@@ -1,7 +1,22 @@
 from abc import ABC, abstractmethod
 from binascii import hexlify
+from typing import Iterator, Union
+
+import PIL.Image
 
 from color.cluster import ColorCluster, RGB
+from . import utils
+
+
+_HSL = tuple[int, int, int]
+_HSLA = tuple[int, int, int, int]
+_RGBA = _HSLA
+_RGB = _HSL
+_HEX = str
+
+ColorIterator = Iterator[_HEX | _RGB | _RGBA | _HSL | _HSLA]
+Color = Union[_HEX | _RGB | _RGBA | _HSL | _HSLA]
+ColorBands = list[list[int]]
 
 
 class IColorPalette(ABC):
@@ -40,3 +55,23 @@ class RangeColorPalette(IColorPalette):
             self._hexlify_rgb(color)
             for color in self.get_palette_data(stop, start, step)
         ]
+
+
+class IColor(ABC):
+    """
+    c = HexRGB(image)
+    c.get_color_bands()
+    c.make_palette()
+    """
+
+    def __init__(self, image: PIL.Image.Image) -> None:
+        self.image = image
+
+    @abstractmethod
+    def get_color_bands(self) -> ColorBands:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def structure_raw_palette(color_bands: ColorBands) -> ColorIterator:
+        pass
