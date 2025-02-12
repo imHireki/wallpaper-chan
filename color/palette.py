@@ -84,3 +84,12 @@ class HexRGB(IColor):
     @staticmethod
     def structure_raw_palette(color_bands: ColorBands) -> Iterator[_HEX]:
         return map(lambda *RGB: utils.rgb_to_hex(RGB), *color_bands)
+
+
+class RGBA(IColor):
+    def get_color_bands(self) -> ColorBands:
+        return [self.image.getdata(band) for band in range(4)]
+
+    @staticmethod
+    def structure_raw_palette(color_bands: ColorBands) -> Iterator[_RGBA]:
+        return map(lambda *rgba: tuple(rgba), *color_bands)
