@@ -6,10 +6,6 @@ if TYPE_CHECKING:
     from color.palette import ColorBands, ColorIterator, Color, IColor
 
 
-SplitRGB = list[list[int]]
-RGB = tuple[int, ...]
-
-
 class SortedColorCluster:
     def __init__(self, color: IColor) -> None:
         self.color = color
