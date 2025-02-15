@@ -18,14 +18,9 @@ ColorBands = list[list[int]]
 
 
 class IColor(ABC):
-    """
-    c = HexRGB(image)
-    c.get_color_bands()
-    c.make_palette()
-    """
-
-    def __init__(self, image: PIL.Image.Image) -> None:
+    def __init__(self, image: PIL.Image.Image, alpha: bool = False) -> None:
         self.image = image
+        self.alpha = 1 if alpha else 0
 
     @abstractmethod
     def get_color_bands(self) -> ColorBands:
@@ -39,17 +34,17 @@ class IColor(ABC):
 
 class HexRGB(IColor):
     def get_color_bands(self) -> ColorBands:
-        return [self.image.getdata(band) for band in range(3)]
+        return [self.image.getdata(band) for band in range(3 + self.alpha)]
 
     @staticmethod
     def structure_raw_palette(color_bands: ColorBands) -> Iterator[_HEX]:
-        return map(lambda *RGB: utils.rgb_to_hex(RGB), *color_bands)
+        return map(lambda *RGB: utils.rgb_or_rgba_to_hex(RGB), *color_bands)
 
 
-class RGBA(IColor):
+class RGB(IColor):
     def get_color_bands(self) -> ColorBands:
-        return [self.image.getdata(band) for band in range(4)]
+        return [self.image.getdata(band) for band in range(3 + self.alpha)]
 
     @staticmethod
-    def structure_raw_palette(color_bands: ColorBands) -> Iterator[_RGBA]:
-        return map(lambda *rgba: tuple(rgba), *color_bands)
+    def structure_raw_palette(color_bands: ColorBands) -> Iterator[_RGB | _RGBA]:
+        return map(lambda *RGB: tuple(RGB), *color_bands)
