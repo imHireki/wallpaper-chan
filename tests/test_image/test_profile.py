@@ -12,7 +12,9 @@ class TestStaticJpegRgbProfile:
         assert profile.StaticJpegRgbProfile(mocker.Mock()).is_optimized() is True
 
     def test_optimize(self, mocker):
-        assert not profile.StaticJpegRgbProfile(mocker.Mock()).optimize({})
+        result = mocker.patch("image.profile.BytesIO").return_value
+        optimized = profile.StaticJpegRgbProfile(mocker.Mock()).optimize({})
+        assert result == optimized
 
     def test_get_image_editor(self, mocker):
         image_editor_mock = mocker.patch("image.editor.StaticImageEditor")
@@ -38,12 +40,14 @@ class TestStaticWebpRgbProfile:
 
     def test_optimize(self, mocker):
         mocker.patch("image.editor.StaticImageEditor")
+        result = mocker.patch("image.profile.BytesIO").return_value
 
         image_info = profile.StaticWebpRgbProfile(mocker.Mock())
+        editor = image_info._image_editor = mocker.Mock()
         optimized_image = image_info.optimize(SAVE_OPTIONS)
 
-        assert optimized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == SAVE_OPTIONS["JPEG"]
+        editor.save.assert_called_with(result, **SAVE_OPTIONS["JPEG"])
+        assert optimized_image == result
 
 
 class TestStaticWebpRgbaProfile:
@@ -62,6 +66,7 @@ class TestStaticWebpRgbaProfile:
     )
     def test_optimize(self, mocker, extrema, save_options):
         image_mock = mocker.Mock(getextrema=lambda: extrema)
+        result = mocker.patch("image.profile.BytesIO").return_value
 
         image_info = profile.StaticWebpRgbaProfile(image_mock)
         editor = image_info._image_editor = mocker.Mock()
@@ -69,8 +74,12 @@ class TestStaticWebpRgbaProfile:
         opts = {save_options["format"]: save_options}
         optimized_image = image_info.optimize(opts)
 
-        assert optimized_image is image_info._image_editor.result
-        editor.save.assert_called_with(**save_options)
+        if save_options["format"] == "JPEG":
+            editor.convert_mode.assert_called_with("RGB")
+        else:
+            editor.convert_mode.assert_not_called()
+        assert optimized_image == result
+        editor.save.assert_called_with(result, **save_options)
 
 
 class TestStaticPngRgbProfile:
@@ -82,12 +91,14 @@ class TestStaticPngRgbProfile:
 
     def test_optimize(self, mocker):
         mocker.patch("image.editor.StaticImageEditor")
+        result = mocker.patch("image.profile.BytesIO").return_value
 
         image_info = profile.StaticPngRgbProfile(mocker.Mock())
+        editor = image_info._image_editor = mocker.Mock()
         optimized_image = image_info.optimize(SAVE_OPTIONS)
 
-        assert optimized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == SAVE_OPTIONS["JPEG"]
+        assert optimized_image == result
+        editor.save.assert_called_with(result, **SAVE_OPTIONS["JPEG"])
 
 
 class TestStaticPngRgbaProfile:
@@ -110,12 +121,15 @@ class TestStaticPngRgbaProfile:
 
     def test_optimize(self, mocker):
         mocker.patch("image.editor.StaticImageEditor")
+        result = mocker.patch("image.profile.BytesIO").return_value
 
         image_info = profile.StaticPngRgbaProfile(mocker.Mock())
+        editor = image_info._image_editor = mocker.Mock()
         optimized_image = image_info.optimize(SAVE_OPTIONS)
 
-        assert optimized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == SAVE_OPTIONS["JPEG"]
+        assert optimized_image == result
+        editor.convert_mode.assert_called_with("RGB")
+        editor.save.assert_called_with(result, **SAVE_OPTIONS["JPEG"])
 
 
 class TestAnimatedGifPProfile:
