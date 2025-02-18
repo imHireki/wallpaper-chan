@@ -1,7 +1,7 @@
-from tempfile import _TemporaryFileWrapper
 from abc import ABC, abstractmethod
+from io import BytesIO
 
-import PIL.Image
+from PIL.Image import Image
 
 from image.utils import has_translucent_alpha
 from image import editor
@@ -11,15 +11,15 @@ class IStaticImageProfile(ABC):
     _image_editor: editor.StaticImageEditor
     name: str
 
-    def __init__(self, image: PIL.Image.Image) -> None:
-        self._image: PIL.Image.Image = image
+    def __init__(self, image: Image) -> None:
+        self._image: Image = image
 
     @abstractmethod
     def is_optimized(self) -> bool:
         pass
 
     @abstractmethod
-    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper | None:
+    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
         pass
 
     def get_image_editor(self) -> editor.StaticImageEditor:
@@ -27,7 +27,7 @@ class IStaticImageProfile(ABC):
             self._image_editor = editor.StaticImageEditor(self._image)
         return self._image_editor
 
-    def get_image_for_color_clustering(self) -> PIL.Image.Image:
+    def get_image_for_color_clustering(self) -> Image:
         return self._image
 
 
@@ -37,8 +37,8 @@ class StaticJpegRgbProfile(IStaticImageProfile):
     def is_optimized(self) -> bool:
         return True
 
-    def optimize(self, save_options: dict[str, dict]) -> None:
-        return
+    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
+        return BytesIO()
 
 
 class StaticWebpRgbProfile(IStaticImageProfile):
@@ -47,11 +47,12 @@ class StaticWebpRgbProfile(IStaticImageProfile):
     def is_optimized(self) -> bool:
         return False
 
-    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
         self.get_image_editor()
 
-        self._image_editor.save(**save_options["JPEG"])
-        return self._image_editor.result
+        result = BytesIO()
+        self._image_editor.save(result, **save_options["JPEG"])
+        return result
 
 
 class StaticWebpRgbaProfile(IStaticImageProfile):
@@ -60,15 +61,17 @@ class StaticWebpRgbaProfile(IStaticImageProfile):
     def is_optimized(self) -> bool:
         return False
 
-    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
         self.get_image_editor()
 
-        if not has_translucent_alpha(self._image):
-            self._image_editor.save(**save_options["JPEG"])
-        else:
-            self._image_editor.save(**save_options["PNG"])
+        result = BytesIO()
 
-        return self._image_editor.result
+        if not has_translucent_alpha(self._image):
+            self._image_editor.convert_mode("RGB")
+            self._image_editor.save(result, **save_options["JPEG"])
+        else:
+            self._image_editor.save(result, **save_options["PNG"])
+        return result
 
 
 class StaticPngRgbProfile(IStaticImageProfile):
@@ -77,11 +80,12 @@ class StaticPngRgbProfile(IStaticImageProfile):
     def is_optimized(self) -> bool:
         return False
 
-    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
         self.get_image_editor()
 
-        self._image_editor.save(**save_options["JPEG"])
-        return self._image_editor.result
+        result = BytesIO()
+        self._image_editor.save(result, **save_options["JPEG"])
+        return result
 
 
 class StaticPngRgbaProfile(IStaticImageProfile):
@@ -90,11 +94,13 @@ class StaticPngRgbaProfile(IStaticImageProfile):
     def is_optimized(self) -> bool:
         return has_translucent_alpha(self._image)
 
-    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
+    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
         self.get_image_editor()
 
-        self._image_editor.save(**save_options["JPEG"])
-        return self._image_editor.result
+        result = BytesIO()
+        self._image_editor.convert_mode("RGB")
+        self._image_editor.save(result, **save_options["JPEG"])
+        return result
 
 
 class IAnimatedImageProfile(ABC):
