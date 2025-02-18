@@ -6,17 +6,11 @@ from PIL._typing import StrOrBytesPath
 from PIL.Image import Image, Resampling
 import PIL.ImageSequence
 
-from image.profile import has_translucent_alpha
+from image import utils
 
 
 Resample = Resampling | Literal[0, 1, 2, 3, 4, 5] | None
-Fp = StrOrBytesPath | IO[bytes]
-
-
-def get_named_temporary_file() -> _TemporaryFileWrapper:
-    temporary_file = NamedTemporaryFile(delete=False)
-    temporary_file.close()
-    return temporary_file
+File = StrOrBytesPath | IO[bytes]
 
 
 class IImageEditor(ABC):
@@ -36,7 +30,7 @@ class IImageEditor(ABC):
         pass
 
     @abstractmethod
-    def save(self, fp: Fp, format: str, **extra_options: Any) -> None:
+    def save(self, output: File, format: str, **extra_options: Any) -> None:
         pass
 
 
@@ -58,8 +52,8 @@ class StaticImageEditor(IImageEditor):
             size=size, resample=resample, reducing_gap=reducing_gap
         )
 
-    def save(self, fp: Fp, format: str, **extra_options: Any) -> None:
-        self._processed_image.save(fp, format=format, **extra_options)
+    def save(self, output: File, format: str, **extra_options: Any) -> None:
+        self._processed_image.save(output, format=format, **extra_options)
 
 
 class AnimatedImageEditor(IImageEditor):

@@ -3,11 +3,6 @@ import pytest
 from image import editor
 
 
-@pytest.fixture(autouse=True)
-def patch_tempfile(mocker):
-    return mocker.patch("image.editor.get_named_temporary_file")
-
-
 class TestStaticImageEditor:
     def test_actual_mode(self, mocker):
         image_mode = "RGB"
