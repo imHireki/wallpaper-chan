@@ -3,11 +3,11 @@ from io import BytesIO
 
 from PIL.Image import Image
 
-from image.utils import has_translucent_alpha
+from image import utils
 from image import editor
 
 
-class IStaticImageProfile(ABC):
+class IStaticProfile(ABC):
     _image_editor: editor.StaticImageEditor
     name: str
 
@@ -16,10 +16,6 @@ class IStaticImageProfile(ABC):
 
     @abstractmethod
     def is_optimized(self) -> bool:
-        pass
-
-    @abstractmethod
-    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
         pass
 
     def get_image_editor(self) -> editor.StaticImageEditor:
@@ -31,76 +27,68 @@ class IStaticImageProfile(ABC):
         return self._image
 
 
-class StaticJpegRgbProfile(IStaticImageProfile):
+class IOptimizableStaticProfile(IStaticProfile):
+    @abstractmethod
+    def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
+        pass
+
+
+class StaticJpegRgbProfile(IStaticProfile):
     name = "JPEG_RGB"
 
     def is_optimized(self) -> bool:
         return True
 
-    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
-        return BytesIO()
 
-
-class StaticWebpRgbProfile(IStaticImageProfile):
+class StaticWebpRgbProfile(IOptimizableStaticProfile):
     name = "WEBP_RGB"
 
     def is_optimized(self) -> bool:
         return False
 
-    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
+    def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
         self.get_image_editor()
-
-        result = BytesIO()
-        self._image_editor.save(result, **save_options["JPEG"])
-        return result
+        self._image_editor.save(output, **save_options["JPEG"])
 
 
-class StaticWebpRgbaProfile(IStaticImageProfile):
+class StaticWebpRgbaProfile(IOptimizableStaticProfile):
     name = "WEBP_RGBA"
 
     def is_optimized(self) -> bool:
         return False
 
-    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
+    def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
         self.get_image_editor()
 
-        result = BytesIO()
-
-        if not has_translucent_alpha(self._image):
+        if not utils.has_translucent_alpha(self._image):
             self._image_editor.convert_mode("RGB")
-            self._image_editor.save(result, **save_options["JPEG"])
+            self._image_editor.save(output, **save_options["JPEG"])
         else:
-            self._image_editor.save(result, **save_options["PNG"])
-        return result
+            self._image_editor.save(output, **save_options["PNG"])
 
 
-class StaticPngRgbProfile(IStaticImageProfile):
+class StaticPngRgbProfile(IOptimizableStaticProfile):
     name = "PNG_RGB"
 
     def is_optimized(self) -> bool:
         return False
 
-    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
+    def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
         self.get_image_editor()
-
-        result = BytesIO()
-        self._image_editor.save(result, **save_options["JPEG"])
-        return result
+        self._image_editor.save(output, **save_options["JPEG"])
 
 
-class StaticPngRgbaProfile(IStaticImageProfile):
+class StaticPngRgbaProfile(IOptimizableStaticProfile):
     name = "PNG_RGBA"
 
     def is_optimized(self) -> bool:
-        return has_translucent_alpha(self._image)
+        return utils.has_translucent_alpha(self._image)
 
-    def optimize(self, save_options: dict[str, dict]) -> BytesIO:
+    def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
         self.get_image_editor()
 
-        result = BytesIO()
         self._image_editor.convert_mode("RGB")
-        self._image_editor.save(result, **save_options["JPEG"])
-        return result
+        self._image_editor.save(output, **save_options["JPEG"])
 
 
 class IAnimatedImageProfile(ABC):
