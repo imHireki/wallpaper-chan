@@ -88,9 +88,9 @@ class TestStaticPngRgbProfile:
 
         image_info = profile.StaticPngRgbProfile(mocker.Mock())
         editor = image_info._image_editor = mocker.Mock()
-        optimized_image = image_info.optimize(mocker, SAVE_OPTIONS)
+        image_info.optimize(output, SAVE_OPTIONS)
 
-        editor.save.assert_called_with(mocker, **SAVE_OPTIONS["JPEG"])
+        editor.save.assert_called_with(output, **SAVE_OPTIONS["JPEG"])
 
 
 class TestStaticPngRgbaProfile:
@@ -117,7 +117,7 @@ class TestStaticPngRgbaProfile:
 
         image_info = profile.StaticPngRgbaProfile(mocker.Mock())
         editor = image_info._image_editor = mocker.Mock()
-        optimized_image = image_info.optimize(output, SAVE_OPTIONS)
+        image_info.optimize(output, SAVE_OPTIONS)
 
         editor.convert_mode.assert_called_with("RGB")
         editor.save.assert_called_with(output, **SAVE_OPTIONS["JPEG"])
@@ -142,12 +142,13 @@ class TestAnimatedGifPProfile:
     def test_optimize(self, mocker, _info, save_options):
         mocker.patch("image.editor.AnimatedImageEditor")
         image_mock = mocker.Mock(info=_info)
+        output = mocker.Mock()
 
         image_info = profile.AnimatedGifPProfile(image_mock)
-        optimized_image = image_info.optimize(SAVE_OPTIONS)
+        editor = image_info._image_editor = mocker.Mock()
+        image_info.optimize(output, SAVE_OPTIONS)
 
-        assert optimized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == save_options
+        editor.save.assert_called_with(output, **save_options)
 
     def test_get_image_editor(self, mocker):
         image_editor_mock = mocker.patch("image.editor.AnimatedImageEditor")
@@ -181,12 +182,13 @@ class TestAnimatedWebpRgbaProfile:
 
     def test_optimize(self, mocker):
         mocker.patch("image.editor.AnimatedImageEditor")
+        output = mocker.Mock()
 
         image_info = profile.AnimatedWebpRgbaProfile(mocker.Mock())
-        optimized_image = image_info.optimize(SAVE_OPTIONS)
+        editor = image_info._image_editor = mocker.Mock()
+        image_info.optimize(output, SAVE_OPTIONS)
 
-        assert optimized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == SAVE_OPTIONS["GIF"]
+        editor.save.assert_called_with(output, **SAVE_OPTIONS["GIF"])
 
 
 class TestAnimatedWebpRgbProfile:
@@ -199,9 +201,10 @@ class TestAnimatedWebpRgbProfile:
 
     def test_optimize(self, mocker):
         mocker.patch("image.editor.AnimatedImageEditor")
+        output = mocker.Mock()
 
         image_info = profile.AnimatedWebpRgbProfile(mocker.Mock())
-        optimized_image = image_info.optimize(SAVE_OPTIONS)
+        editor = image_info._image_editor = mocker.Mock()
+        image_info.optimize(output, SAVE_OPTIONS)
 
-        assert optimized_image is image_info._image_editor.result
-        assert image_info._image_editor.save.call_args.kwargs == SAVE_OPTIONS["GIF"]
+        editor.save.assert_called_with(output, **SAVE_OPTIONS["GIF"])
