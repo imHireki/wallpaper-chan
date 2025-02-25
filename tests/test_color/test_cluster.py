@@ -7,7 +7,7 @@ def test_sorted_color_cluster(mocker):
         structure_raw_palette=lambda _: ["blue", "blue", "blue", "red", "white", "red"],
     )
 
-    pixel_cluster = cluster.SortedColorCluster(color)
-    palette = pixel_cluster.get_palette()
+    color_cluster = cluster.SortedColorCluster(color)
+    palette = color_cluster.get_palette()
 
     assert palette == ["blue", "red", "white"]

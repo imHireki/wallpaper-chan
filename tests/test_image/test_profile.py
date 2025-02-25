@@ -12,18 +12,17 @@ class TestStaticJpegRgbProfile:
         assert profile.StaticJpegRgbProfile(mocker.Mock()).is_optimized() is True
 
     def test_get_image_editor(self, mocker):
-        image_editor_mock = mocker.patch("image.editor.StaticImageEditor")
-        image_info = profile.StaticJpegRgbProfile(mocker.Mock())
+        editor = mocker.patch("image.editor.StaticImageEditor")
+        _profile = profile.StaticJpegRgbProfile(mocker.Mock())
 
-        assert image_info.get_image_editor()
-        assert image_editor_mock.call_args.args[0] == image_info._image
+        assert _profile.get_image_editor()
+        assert editor.call_args.args[0] == _profile._image
 
     def test_get_image_for_color_clustering(self, mocker):
-        image_info = profile.StaticJpegRgbProfile(mocker.Mock())
+        _profile = profile.StaticJpegRgbProfile(mocker.Mock())
+        image = _profile.get_image_for_color_clustering()
 
-        image = image_info.get_image_for_color_clustering()
-
-        assert image == image_info._image
+        assert image == _profile._image
 
 
 class TestStaticWebpRgbProfile:
@@ -37,9 +36,9 @@ class TestStaticWebpRgbProfile:
         mocker.patch("image.editor.StaticImageEditor")
         output = mocker.Mock()
 
-        image_info = profile.StaticWebpRgbProfile(mocker.Mock())
-        editor = image_info._image_editor = mocker.Mock()
-        image_info.optimize(output, SAVE_OPTIONS)
+        _profile = profile.StaticWebpRgbProfile(mocker.Mock())
+        editor = _profile._image_editor = mocker.Mock()
+        _profile.optimize(output, SAVE_OPTIONS)
 
         editor.save.assert_called_with(output, **SAVE_OPTIONS["JPEG"])
 
@@ -59,14 +58,14 @@ class TestStaticWebpRgbaProfile:
         ],
     )
     def test_optimize(self, mocker, extrema, save_options):
-        image_mock = mocker.Mock(getextrema=lambda: extrema)
+        image = mocker.Mock(getextrema=lambda: extrema)
         output = mocker.Mock()
 
-        image_info = profile.StaticWebpRgbaProfile(image_mock)
-        editor = image_info._image_editor = mocker.Mock()
+        _profile = profile.StaticWebpRgbaProfile(image)
+        editor = _profile._image_editor = mocker.Mock()
 
         opts = {save_options["format"]: save_options}
-        image_info.optimize(output, opts)
+        _profile.optimize(output, opts)
 
         if save_options["format"] == "JPEG":
             editor.convert_mode.assert_called_with("RGB")
@@ -86,9 +85,9 @@ class TestStaticPngRgbProfile:
         mocker.patch("image.editor.StaticImageEditor")
         output = mocker.Mock()
 
-        image_info = profile.StaticPngRgbProfile(mocker.Mock())
-        editor = image_info._image_editor = mocker.Mock()
-        image_info.optimize(output, SAVE_OPTIONS)
+        _profile = profile.StaticPngRgbProfile(mocker.Mock())
+        editor = _profile._image_editor = mocker.Mock()
+        _profile.optimize(output, SAVE_OPTIONS)
 
         editor.save.assert_called_with(output, **SAVE_OPTIONS["JPEG"])
 
@@ -105,19 +104,18 @@ class TestStaticPngRgbaProfile:
         ],
     )
     def test_is_optimized(self, mocker, extrema, is_translucent):
-        image_mock = mocker.Mock(getextrema=lambda: extrema)
+        image = mocker.Mock(getextrema=lambda: extrema)
+        is_optimized = profile.StaticPngRgbaProfile(image).is_optimized()
 
-        is_optimized = profile.StaticPngRgbaProfile(image_mock).is_optimized()
-
-        assert is_optimized is is_translucent
+        assert is_optimized == is_translucent
 
     def test_optimize(self, mocker):
         mocker.patch("image.editor.StaticImageEditor")
         output = mocker.Mock()
 
-        image_info = profile.StaticPngRgbaProfile(mocker.Mock())
-        editor = image_info._image_editor = mocker.Mock()
-        image_info.optimize(output, SAVE_OPTIONS)
+        _profile = profile.StaticPngRgbaProfile(mocker.Mock())
+        editor = _profile._image_editor = mocker.Mock()
+        _profile.optimize(output, SAVE_OPTIONS)
 
         editor.convert_mode.assert_called_with("RGB")
         editor.save.assert_called_with(output, **SAVE_OPTIONS["JPEG"])
@@ -129,47 +127,45 @@ class TestAnimatedGifPProfile:
 
     @pytest.mark.parametrize("is_animated", [True, False])
     def test_is_optimized(self, mocker, is_animated):
-        image_mock = mocker.Mock(is_animated=is_animated)
+        image = mocker.Mock(is_animated=is_animated)
 
-        is_optimized = profile.AnimatedGifPProfile(image_mock).is_optimized()
+        is_optimized = profile.AnimatedGifPProfile(image).is_optimized()
 
         assert is_optimized is is_animated
 
     @pytest.mark.parametrize(
-        "_info, save_options",
+        "info, save_options",
         [[{"transparency": 1}, SAVE_OPTIONS["PNG"]], [{}, SAVE_OPTIONS["JPEG"]]],
     )
-    def test_optimize(self, mocker, _info, save_options):
+    def test_optimize(self, mocker, info, save_options):
         mocker.patch("image.editor.AnimatedImageEditor")
-        image_mock = mocker.Mock(info=_info)
+        image_mock = mocker.Mock(info=info)
         output = mocker.Mock()
 
-        image_info = profile.AnimatedGifPProfile(image_mock)
-        editor = image_info._image_editor = mocker.Mock()
-        image_info.optimize(output, SAVE_OPTIONS)
+        _profile = profile.AnimatedGifPProfile(image_mock)
+        editor = _profile._image_editor = mocker.Mock()
+        _profile.optimize(output, SAVE_OPTIONS)
 
         editor.save.assert_called_with(output, **save_options)
 
     def test_get_image_editor(self, mocker):
-        image_editor_mock = mocker.patch("image.editor.AnimatedImageEditor")
-        image_mock = mocker.Mock()
+        editor = mocker.patch("image.editor.AnimatedImageEditor")
+        image = mocker.Mock()
+        _profile = profile.AnimatedGifPProfile(image)
 
-        image_info = profile.AnimatedGifPProfile(image_mock)
-
-        assert image_info.get_image_editor()
-        assert image_editor_mock.call_args.args[0] == image_mock
+        assert _profile.get_image_editor()
+        editor.assert_called_with(image)
 
     def test_get_image_for_color_clustering(self, mocker):
         mocker.patch("image.editor.AnimatedImageEditor")
-        image_mock = mocker.Mock()
+        image = mocker.Mock()
 
-        image_info = profile.AnimatedGifPProfile(image_mock)
-        image = image_info.get_image_for_color_clustering()
+        _profile = profile.AnimatedGifPProfile(image)
+        editor = _profile._image_editor = mocker.Mock()
+        ccimage = _profile.get_image_for_color_clustering()
 
-        assert image
-        assert (
-            image_mock.convert.call_args.args[0] == image_info._image_editor.actual_mode
-        )
+        assert ccimage
+        image.convert.assert_called_with(editor.actual_mode)
 
 
 class TestAnimatedWebpRgbaProfile:
@@ -184,9 +180,9 @@ class TestAnimatedWebpRgbaProfile:
         mocker.patch("image.editor.AnimatedImageEditor")
         output = mocker.Mock()
 
-        image_info = profile.AnimatedWebpRgbaProfile(mocker.Mock())
-        editor = image_info._image_editor = mocker.Mock()
-        image_info.optimize(output, SAVE_OPTIONS)
+        _profile = profile.AnimatedWebpRgbaProfile(mocker.Mock())
+        editor = _profile._image_editor = mocker.Mock()
+        _profile.optimize(output, SAVE_OPTIONS)
 
         editor.save.assert_called_with(output, **SAVE_OPTIONS["GIF"])
 
@@ -203,8 +199,8 @@ class TestAnimatedWebpRgbProfile:
         mocker.patch("image.editor.AnimatedImageEditor")
         output = mocker.Mock()
 
-        image_info = profile.AnimatedWebpRgbProfile(mocker.Mock())
-        editor = image_info._image_editor = mocker.Mock()
-        image_info.optimize(output, SAVE_OPTIONS)
+        _profile = profile.AnimatedWebpRgbProfile(mocker.Mock())
+        editor = _profile._image_editor = mocker.Mock()
+        _profile.optimize(output, SAVE_OPTIONS)
 
         editor.save.assert_called_with(output, **SAVE_OPTIONS["GIF"])
