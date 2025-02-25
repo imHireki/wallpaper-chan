@@ -20,9 +20,9 @@ class TestStaticImageEditor:
         image_mock = mocker.Mock()
 
         image_editor = editor.StaticImageEditor(image_mock)
-        image_editor.resize(**editor_options["resize_options"])
+        image_editor.resize(**editor_options["resize"])
 
-        assert image_mock.resize.call_args.kwargs == editor_options["resize_options"]
+        assert image_mock.resize.call_args.kwargs == editor_options["resize"]
 
     def test_save(self, mocker, editor_options):
         fp = mocker.Mock()
@@ -30,9 +30,9 @@ class TestStaticImageEditor:
         image_editor = editor.StaticImageEditor(mocker.Mock())
         edited_image = mocker.patch.object(image_editor, "_processed_image")
 
-        image_editor.save(fp, **editor_options["save_options"])
+        image_editor.save(fp, **editor_options["save"])
 
-        edited_image.save.assert_called_with(fp, **editor_options["save_options"])
+        edited_image.save.assert_called_with(fp, **editor_options["save"])
 
 
 class TestAnimatedImageEditor:
@@ -86,18 +86,18 @@ class TestAnimatedImageEditor:
         )
 
         image_editor = editor.AnimatedImageEditor(image_mock_1)
-        image_editor.resize(**editor_options["resize_options"])
+        image_editor.resize(**editor_options["resize"])
         [_ for _ in image_editor._processed_frames]
 
         assert image_mock_1.convert.call_args.args[0] == image_mock_2.mode
         assert (
             image_mock_1_converted.return_value.resize.call_args.kwargs
-            == editor_options["resize_options"]
+            == editor_options["resize"]
         )
-        assert image_mock_2.resize.call_args.kwargs == editor_options["resize_options"]
+        assert image_mock_2.resize.call_args.kwargs == editor_options["resize"]
 
     def test_save(self, mocker, editor_options):
-        editor_options["save_options"].update({"save_all": True})
+        editor_options["save"].update({"save_all": True})
         image_mock_1, image_mock_2 = mocker.Mock(), mocker.Mock()
         mocker.patch(
             "image.editor.AnimatedImageEditor._find_actual_mode", lambda self: "RGB"
@@ -107,11 +107,10 @@ class TestAnimatedImageEditor:
 
         image_editor = editor.AnimatedImageEditor(image_mock_1)
         image_editor._processed_frames = (_ for _ in [image_mock_1, image_mock_2])
-        image_editor.save(output, **editor_options["save_options"])
+        image_editor.save(output, **editor_options["save"])
 
-        editor_options["save_options"].update({"append_images": [image_mock_2]})
-        image_mock_1.save.assert_called_with(output, **editor_options["save_options"])
-
+        editor_options["save"].update({"append_images": [image_mock_2]})
+        image_mock_1.save.assert_called_with(output, **editor_options["save"])
 
 def test_bulk_resize(mocker, editor_options, patch_tempfile):
     editor_options = dict(
