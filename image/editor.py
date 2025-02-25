@@ -110,11 +110,3 @@ class AnimatedImageEditor(IImageEditor):
 
     def _get_frames(self) -> ImageSequence.Iterator:
         return ImageSequence.Iterator(self._original_image)
-
-def bulk_resize(editor: IImageEditor, resize_save_options: list[dict]):
-    for options in resize_save_options:
-        editor.resize(**options["resize"])
-        editor.save(**options["save"])
-        result = editor.result
-        del editor.result
-        yield result

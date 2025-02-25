@@ -111,34 +111,3 @@ class TestAnimatedImageEditor:
 
         editor_options["save"].update({"append_images": [image_mock_2]})
         image_mock_1.save.assert_called_with(output, **editor_options["save"])
-
-def test_bulk_resize(mocker, editor_options, patch_tempfile):
-    editor_options = dict(
-        resize=editor_options["resize_options"], save=editor_options["save_options"]
-    )
-    options = [
-        {
-            "resize": {"size": (256, 256), "resample": 1, "reducing_gap": 3},
-            "save": {"format": "JPEG", "optimize": True, "quality": 75},
-        },
-        {
-            "resize": {"size": (128, 128), "resample": 1, "reducing_gap": 3},
-            "save": {"format": "PNG", "optimize": True, "quality": 75},
-        },
-    ]
-
-    editor_mock = mocker.Mock()
-    bulk_resize = editor.bulk_resize(editor_mock, options)
-
-    next(bulk_resize)
-    assert editor_mock.resize.call_args.kwargs == options[0]["resize"]
-    assert editor_mock.save.call_args.kwargs == options[0]["save"]
-    assert editor_mock.return_value
-
-    assert not hasattr(editor_mock, "result")
-    editor_mock.result = mocker.Mock()  # reset result (test only)
-
-    next(bulk_resize)
-    assert editor_mock.resize.call_args.kwargs == options[1]["resize"]
-    assert editor_mock.save.call_args.kwargs == options[1]["save"]
-    assert editor_mock.return_value
