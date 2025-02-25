@@ -28,7 +28,7 @@ class IColor(ABC):
 
     @staticmethod
     @abstractmethod
-    def structure_raw_palette(color_bands: ColorBands) -> ColorIterator:
+    def structure_palette(color_bands: ColorBands) -> ColorIterator:
         pass
 
 
@@ -37,7 +37,7 @@ class HexRGB(IColor):
         return [self.image.getdata(band) for band in range(3 + self.alpha)]
 
     @staticmethod
-    def structure_raw_palette(color_bands: ColorBands) -> Iterator[_HEX]:
+    def structure_palette(color_bands: ColorBands) -> Iterator[_HEX]:
         return map(lambda *RGB: utils.rgb_or_rgba_to_hex(RGB), *color_bands)
 
 
@@ -46,5 +46,5 @@ class RGB(IColor):
         return [self.image.getdata(band) for band in range(3 + self.alpha)]
 
     @staticmethod
-    def structure_raw_palette(color_bands: ColorBands) -> Iterator[_RGB | _RGBA]:
+    def structure_palette(color_bands: ColorBands) -> Iterator[_RGB | _RGBA]:
         return map(lambda *RGB: tuple(RGB), *color_bands)
