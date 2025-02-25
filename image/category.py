@@ -1,36 +1,37 @@
 from abc import ABC, abstractmethod
-from typing import Type
 
-import PIL.Image
+from PIL.Image import Image
 
-from image.profile import IStaticImageProfile, IAnimatedImageProfile
+from image.profile import (
+    IOptimizableStaticProfile,
+    IStaticProfile,
+    IOptimizableAnimatedProfile,
+)
 
 
-ImageProfile = IStaticImageProfile | IAnimatedImageProfile | None
-SupportedImages = dict[
-    str, dict[str, Type[IStaticImageProfile] | Type[IAnimatedImageProfile]]
-]
+Profile = IStaticProfile | IOptimizableStaticProfile | IOptimizableAnimatedProfile
+SupportedImages = dict[str, dict[str, type[Profile]]]
 
 
 class IImageCategory(ABC):
-    def __init__(self, image: PIL.Image.Image, supported_images: SupportedImages):
-        self._image: PIL.Image.Image = image
+    def __init__(self, image: Image, supported_images: SupportedImages):
+        self._image: Image = image
         self._supported_images: SupportedImages = supported_images
 
     @abstractmethod
-    def get_image_profile(self) -> ImageProfile:
+    def get_image_profile(self) -> Profile | None:
         pass
 
 
 class StaticImageCategory(IImageCategory):
-    def get_image_profile(self) -> ImageProfile:
+    def get_image_profile(self) -> Profile | None:
         format_mode = "_".join([self._image.format or "", self._image.mode])
         profile_class = self._supported_images["STATIC"].get(format_mode)
         return profile_class(self._image) if profile_class else None
 
 
 class AnimatedImageCategory(IImageCategory):
-    def get_image_profile(self) -> ImageProfile:
+    def get_image_profile(self) -> Profile | None:
         format_mode = "_".join([self._image.format or "", self._image.mode])
         profile_class = self._supported_images["ANIMATED"].get(format_mode)
         return profile_class(self._image) if profile_class else None
@@ -38,7 +39,7 @@ class AnimatedImageCategory(IImageCategory):
 
 class ImageCategoryProxy(IImageCategory):
     _image_category: IImageCategory
-    _image_profile: ImageProfile
+    _image_profile: Profile | None
 
     def _determine_category(self) -> IImageCategory:
         if (
@@ -54,7 +55,7 @@ class ImageCategoryProxy(IImageCategory):
             self._image_category = self._determine_category()
         return self._image_category
 
-    def get_image_profile(self) -> ImageProfile:
+    def get_image_profile(self) -> Profile | None:
         self.get_image_category()
 
         if not hasattr(self, "_image_profile"):
