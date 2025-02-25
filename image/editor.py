@@ -12,7 +12,7 @@ Resample = Resampling | Literal[0, 1, 2, 3, 4, 5] | None
 File = StrOrBytesPath | IO[bytes]
 
 
-class IImageEditor(ABC):
+class IEditor(ABC):
     @property
     @abstractmethod
     def actual_mode(self) -> str:
@@ -33,7 +33,7 @@ class IImageEditor(ABC):
         pass
 
 
-class StaticImageEditor(IImageEditor):
+class StaticEditor(IEditor):
     def __init__(self, image: Image) -> None:
         self._original_image = self._processed_image = image
 
@@ -55,7 +55,7 @@ class StaticImageEditor(IImageEditor):
         self._processed_image.save(output, format=format, **extra_options)
 
 
-class AnimatedImageEditor(IImageEditor):
+class AnimatedEditor(IEditor):
     def __init__(self, image: Image) -> None:
         self._original_image: Image = image
         self._processed_frames: Iterator = self._get_frames()

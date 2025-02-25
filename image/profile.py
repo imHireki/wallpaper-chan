@@ -7,7 +7,7 @@ from image import utils
 
 
 class IStaticProfile(ABC):
-    _image_editor: editor.StaticImageEditor
+    _editor: editor.StaticEditor
     name: str
 
     def __init__(self, image: Image) -> None:
@@ -17,10 +17,10 @@ class IStaticProfile(ABC):
     def is_optimized(self) -> bool:
         pass
 
-    def get_image_editor(self) -> editor.StaticImageEditor:
-        if not hasattr(self, "_image_editor"):
-            self._image_editor = editor.StaticImageEditor(self._image)
-        return self._image_editor
+    def get_editor(self) -> editor.StaticEditor:
+        if not hasattr(self, "_editor"):
+            self._editor = editor.StaticEditor(self._image)
+        return self._editor
 
     def get_image_for_color_clustering(self) -> Image:
         return self._image
@@ -46,8 +46,8 @@ class StaticWebpRgbProfile(IOptimizableStaticProfile):
         return False
 
     def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
-        self.get_image_editor()
-        self._image_editor.save(output, **save_options["JPEG"])
+        self.get_editor()
+        self._editor.save(output, **save_options["JPEG"])
 
 
 class StaticWebpRgbaProfile(IOptimizableStaticProfile):
@@ -57,13 +57,13 @@ class StaticWebpRgbaProfile(IOptimizableStaticProfile):
         return False
 
     def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
-        self.get_image_editor()
+        self.get_editor()
 
         if not utils.has_translucent_alpha(self._image):
-            self._image_editor.convert_mode("RGB")
-            self._image_editor.save(output, **save_options["JPEG"])
+            self._editor.convert_mode("RGB")
+            self._editor.save(output, **save_options["JPEG"])
         else:
-            self._image_editor.save(output, **save_options["PNG"])
+            self._editor.save(output, **save_options["PNG"])
 
 
 class StaticPngRgbProfile(IOptimizableStaticProfile):
@@ -73,8 +73,8 @@ class StaticPngRgbProfile(IOptimizableStaticProfile):
         return False
 
     def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
-        self.get_image_editor()
-        self._image_editor.save(output, **save_options["JPEG"])
+        self.get_editor()
+        self._editor.save(output, **save_options["JPEG"])
 
 
 class StaticPngRgbaProfile(IOptimizableStaticProfile):
@@ -84,14 +84,14 @@ class StaticPngRgbaProfile(IOptimizableStaticProfile):
         return utils.has_translucent_alpha(self._image)
 
     def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
-        self.get_image_editor()
+        self.get_editor()
 
-        self._image_editor.convert_mode("RGB")
-        self._image_editor.save(output, **save_options["JPEG"])
+        self._editor.convert_mode("RGB")
+        self._editor.save(output, **save_options["JPEG"])
 
 
 class IAnimatedProfile(ABC):
-    _image_editor: editor.AnimatedImageEditor
+    _editor: editor.AnimatedEditor
     name: str
 
     def __init__(self, image: Image) -> None:
@@ -101,14 +101,14 @@ class IAnimatedProfile(ABC):
     def is_optimized(self) -> bool:
         pass
 
-    def get_image_editor(self) -> editor.AnimatedImageEditor:
-        if not hasattr(self, "_image_editor"):
-            self._image_editor = editor.AnimatedImageEditor(self._image)
-        return self._image_editor
+    def get_editor(self) -> editor.AnimatedEditor:
+        if not hasattr(self, "_editor"):
+            self._editor = editor.AnimatedEditor(self._image)
+        return self._editor
 
     def get_image_for_color_clustering(self) -> Image:
-        self.get_image_editor()
-        return self._image.convert(self._image_editor.actual_mode)
+        self.get_editor()
+        return self._image.convert(self._editor.actual_mode)
 
 
 class IOptimizableAnimatedProfile(IAnimatedProfile):
@@ -124,12 +124,12 @@ class AnimatedGifPProfile(IOptimizableAnimatedProfile):
         return getattr(self._image, "is_animated", False)
 
     def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
-        self.get_image_editor()
+        self.get_editor()
 
         if not "transparency" in self._image.info:
-            self._image_editor.save(output, **save_options["JPEG"])
+            self._editor.save(output, **save_options["JPEG"])
         else:
-            self._image_editor.save(output, **save_options["PNG"])
+            self._editor.save(output, **save_options["PNG"])
 
 
 class AnimatedWebpRgbaProfile(IOptimizableAnimatedProfile):
@@ -139,8 +139,8 @@ class AnimatedWebpRgbaProfile(IOptimizableAnimatedProfile):
         return False
 
     def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
-        self.get_image_editor()
-        self._image_editor.save(output, **save_options["GIF"])
+        self.get_editor()
+        self._editor.save(output, **save_options["GIF"])
 
 
 class AnimatedWebpRgbProfile(IOptimizableAnimatedProfile):
@@ -150,5 +150,5 @@ class AnimatedWebpRgbProfile(IOptimizableAnimatedProfile):
         return False
 
     def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
-        self.get_image_editor()
-        self._image_editor.save(output, **save_options["GIF"])
+        self.get_editor()
+        self._editor.save(output, **save_options["GIF"])
