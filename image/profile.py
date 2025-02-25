@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
-from io import BytesIO
 
 from PIL.Image import Image
 
-from image import utils
 from image import editor
+from image import utils
 
 
 class IStaticProfile(ABC):
@@ -91,19 +90,15 @@ class StaticPngRgbaProfile(IOptimizableStaticProfile):
         self._image_editor.save(output, **save_options["JPEG"])
 
 
-class IAnimatedImageProfile(ABC):
+class IAnimatedProfile(ABC):
     _image_editor: editor.AnimatedImageEditor
     name: str
 
-    def __init__(self, image: PIL.Image.Image) -> None:
-        self._image: PIL.Image.Image = image
+    def __init__(self, image: Image) -> None:
+        self._image: Image = image
 
     @abstractmethod
     def is_optimized(self) -> bool:
-        pass
-
-    @abstractmethod
-    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
         pass
 
     def get_image_editor(self) -> editor.AnimatedImageEditor:
@@ -111,49 +106,49 @@ class IAnimatedImageProfile(ABC):
             self._image_editor = editor.AnimatedImageEditor(self._image)
         return self._image_editor
 
-    def get_image_for_color_clustering(self) -> PIL.Image.Image:
+    def get_image_for_color_clustering(self) -> Image:
         self.get_image_editor()
         return self._image.convert(self._image_editor.actual_mode)
 
 
-class AnimatedGifPProfile(IAnimatedImageProfile):
+class IOptimizableAnimatedProfile(IAnimatedProfile):
+    @abstractmethod
+    def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
+        pass
+
+
+class AnimatedGifPProfile(IOptimizableAnimatedProfile):
     name = "GIF_P"
 
     def is_optimized(self) -> bool:
         return getattr(self._image, "is_animated", False)
 
-    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
+    def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
         self.get_image_editor()
 
         if not "transparency" in self._image.info:
-            self._image_editor.save(**save_options["JPEG"])
+            self._image_editor.save(output, **save_options["JPEG"])
         else:
-            self._image_editor.save(**save_options["PNG"])
-
-        return self._image_editor.result
+            self._image_editor.save(output, **save_options["PNG"])
 
 
-class AnimatedWebpRgbaProfile(IAnimatedImageProfile):
+class AnimatedWebpRgbaProfile(IOptimizableAnimatedProfile):
     name = "WEBP_RGBA"
 
     def is_optimized(self) -> bool:
         return False
 
-    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
+    def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
         self.get_image_editor()
-
-        self._image_editor.save(**save_options["GIF"])
-        return self._image_editor.result
+        self._image_editor.save(output, **save_options["GIF"])
 
 
-class AnimatedWebpRgbProfile(IAnimatedImageProfile):
+class AnimatedWebpRgbProfile(IOptimizableAnimatedProfile):
     name = "WEBP_RGB"
 
     def is_optimized(self) -> bool:
         return False
 
-    def optimize(self, save_options: dict[str, dict]) -> _TemporaryFileWrapper:
+    def optimize(self, output: editor.File, save_options: dict[str, dict]) -> None:
         self.get_image_editor()
-
-        self._image_editor.save(**save_options["GIF"])
-        return self._image_editor.result
+        self._image_editor.save(output, **save_options["GIF"])
