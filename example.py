@@ -49,7 +49,7 @@ def resize(image_name):
 
     editor = profile.get_editor()
 
-    # Avoid format-related problems resizing an optimized image
+    # Avoid format-related problems by resizing the optimized image
     if not profile.is_optimized():
         output = BytesIO()
         profile.optimize(output, SAVE_OPTIONS)  # type: ignore
