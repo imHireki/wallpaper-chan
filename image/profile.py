@@ -22,7 +22,7 @@ class IStaticProfile(ABC):
             self._editor = editor.StaticEditor(self._image)
         return self._editor
 
-    def get_image_for_color_clustering(self) -> Image:
+    def get_color_clustering_image(self) -> Image:
         return self._image
 
 
@@ -106,8 +106,9 @@ class IAnimatedProfile(ABC):
             self._editor = editor.AnimatedEditor(self._image)
         return self._editor
 
-    def get_image_for_color_clustering(self) -> Image:
+    def get_color_clustering_image(self) -> Image:
         self.get_editor()
+        # only the 1st frame in its actual mode
         return self._image.convert(self._editor.actual_mode)
 
 
