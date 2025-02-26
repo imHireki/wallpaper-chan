@@ -37,7 +37,7 @@ class AnimatedCategory(ICategory):
         return profile_class(self._image) if profile_class else None
 
 
-class ImageCategoryProxy(ICategory):
+class CategoryProxy(ICategory):
     _category: ICategory
     _profile: Profile | None
 

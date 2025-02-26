@@ -39,14 +39,14 @@ class TestImageCategoryProxy:
     def test_determine_category(self, mocker, is_animated, format, category_patch):
         category_patch = mocker.patch(category_patch)
         image = mocker.Mock(is_animated=is_animated, format=format)
-        proxy = category.ImageCategoryProxy(image, {})
+        proxy = category.CategoryProxy(image, {})
 
         _category = proxy._determine_category()
 
         assert _category is category_patch.return_value
 
     def test_get_category(self, mocker):
-        proxy = category.ImageCategoryProxy(mocker.Mock(), {})
+        proxy = category.CategoryProxy(mocker.Mock(), {})
         _category = proxy.get_category()
         _category_2 = proxy.get_category()
 
@@ -54,7 +54,7 @@ class TestImageCategoryProxy:
         assert _category_2 is _category
 
     def test_get_profile(self, mocker):
-        proxy = category.ImageCategoryProxy(mocker.Mock(), {})
+        proxy = category.CategoryProxy(mocker.Mock(), {})
         mocker.patch.object(proxy, "get_category")
         proxy._image_category = mocker.Mock()
 
