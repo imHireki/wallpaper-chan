@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Generator
 
 
 if TYPE_CHECKING:
-    from image.editor import IImageEditor
+    from image.editor import IEditor
 
 
 def has_translucent_alpha(image: PIL.Image.Image) -> bool:
@@ -19,11 +19,7 @@ def has_translucent_alpha(image: PIL.Image.Image) -> bool:
     return False
 
 
-def bulk_resize(
-    editor: IImageEditor, resize_save_options: list[dict]
-) -> Generator[BytesIO]:
-    """Resize images to BytesIO objects"""
-
+def bulk_resize(editor: IEditor, resize_save_options: list[dict]) -> Generator[BytesIO]:
     for options in resize_save_options:
         editor.resize(**options["resize"])
         result = BytesIO()
@@ -32,7 +28,7 @@ def bulk_resize(
 
 
 def bulk_resize_tempfile(
-    editor: IImageEditor, resize_save_options: list[dict]
+    editor: IEditor, resize_save_options: list[dict]
 ) -> Generator[str]:
     for options in resize_save_options:
         editor.resize(**options["resize"])
